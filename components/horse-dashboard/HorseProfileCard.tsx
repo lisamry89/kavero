@@ -1,11 +1,17 @@
 import Image from "next/image";
-import { Horse } from "@/lib/types";
+import { Horse, HorseStatus } from "@/lib/types";
 import { StatusGauge } from "./StatusGauge";
+
+const STATUS_PROGRESS: Record<HorseStatus, number> = {
+  great: 92,
+  good: 68,
+  attention: 35,
+};
 
 export function HorseProfileCard({ horse }: { horse: Horse }) {
   return (
-    <div className="relative overflow-hidden rounded-4xl border border-kavero-border bg-kavero-surface shadow-premium">
-      <div className="relative h-64 w-full">
+    <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-black">
+      <div className="relative aspect-[4/5] w-full">
         <Image
           src={horse.photoUrl}
           alt={horse.name}
@@ -13,49 +19,46 @@ export function HorseProfileCard({ horse }: { horse: Horse }) {
           priority
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-kavero-surface via-kavero-surface/10 to-transparent" />
-        <div className="absolute left-6 top-6 rounded-full bg-black/40 px-3 py-1 backdrop-blur-md">
-          <span className="text-xs font-medium tracking-wide text-white/80">
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/40" />
+
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
+          <span className="text-[10px] font-medium uppercase tracking-widest2 text-white/60">
             {horse.stable}
           </span>
+          <StatusGauge progress={STATUS_PROGRESS[horse.status]} />
         </div>
-      </div>
 
-      <div className="relative -mt-10 flex flex-col items-center gap-6 px-6 pb-8">
-        <StatusGauge status={horse.status} label={horse.statusLabel} />
-
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-white">
+        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1.5 p-6">
+          <span className="text-[10px] font-medium uppercase tracking-widest2 text-white/50">
+            {horse.statusLabel}
+          </span>
+          <h1 className="text-2xl font-medium tracking-tight text-white">
             {horse.name}
           </h1>
-          <p className="text-sm text-white/50">
+          <p className="text-xs uppercase tracking-widest2 text-white/40">
             {horse.breed} · {horse.age} ans
           </p>
         </div>
+      </div>
 
-        <div className="flex w-full items-center justify-center gap-8 border-t border-kavero-border pt-5">
-          <div className="flex flex-col items-center">
-            <span className="text-xs uppercase tracking-wider text-white/40">
-              Propriétaire
-            </span>
-            <span className="mt-1 text-sm font-semibold text-white">
-              {horse.owner}
-            </span>
-          </div>
-          <div className="h-8 w-px bg-kavero-border" />
-          <div className="flex flex-col items-center">
-            <span className="text-xs uppercase tracking-wider text-white/40">
-              Sorties (7j)
-            </span>
-            <span className="mt-1 text-sm font-semibold text-white">6</span>
-          </div>
-          <div className="h-8 w-px bg-kavero-border" />
-          <div className="flex flex-col items-center">
-            <span className="text-xs uppercase tracking-wider text-white/40">
-              Soins (7j)
-            </span>
-            <span className="mt-1 text-sm font-semibold text-white">14</span>
-          </div>
+      <div className="grid grid-cols-3 divide-x divide-neutral-800 border-t border-neutral-800">
+        <div className="flex flex-col items-center gap-1 py-4">
+          <span className="text-[10px] uppercase tracking-widest2 text-white/40">
+            Propriétaire
+          </span>
+          <span className="text-sm font-medium text-white">{horse.owner}</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 py-4">
+          <span className="text-[10px] uppercase tracking-widest2 text-white/40">
+            Sorties · 7j
+          </span>
+          <span className="text-sm font-medium text-white">6</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 py-4">
+          <span className="text-[10px] uppercase tracking-widest2 text-white/40">
+            Soins · 7j
+          </span>
+          <span className="text-sm font-medium text-white">14</span>
         </div>
       </div>
     </div>

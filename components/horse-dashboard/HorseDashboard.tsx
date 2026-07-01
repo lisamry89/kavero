@@ -11,7 +11,7 @@ export function HorseDashboard({
   feed: FeedItem[];
 }) {
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-6 bg-kavero-bg px-4 pb-16 pt-6">
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-6 bg-black px-4 pb-16 pt-6">
       <HorseProfileCard horse={horse} />
       <ShareStoryButton horse={horse} />
       <DailyFeed items={feed} />

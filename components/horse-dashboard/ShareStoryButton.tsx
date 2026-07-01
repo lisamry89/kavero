@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Share2, Loader2 } from "lucide-react";
 import { Horse } from "@/lib/types";
 
 export function ShareStoryButton({ horse }: { horse: Horse }) {
@@ -16,37 +17,19 @@ export function ShareStoryButton({ horse }: { horse: Horse }) {
     <button
       onClick={handleShare}
       disabled={isGenerating}
-      className="group flex w-full items-center justify-center gap-2 rounded-full bg-kavero-accent px-6 py-4 text-sm font-bold tracking-tight text-black shadow-glow transition active:scale-[0.98] disabled:opacity-70"
+      className="flex w-full items-center justify-center gap-2 rounded-full border border-neutral-700 bg-black px-6 py-4 text-xs font-medium uppercase tracking-widest2 text-white transition active:scale-[0.98] disabled:opacity-60"
     >
       {isGenerating ? (
         <>
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
-          Génération du visuel...
+          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+          Génération
         </>
       ) : (
         <>
-          <ShareIcon />
-          Partager en story — {horse.name}
+          <Share2 className="h-4 w-4" strokeWidth={1.5} />
+          Partager en story
         </>
       )}
     </button>
-  );
-}
-
-function ShareIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-4 w-4 transition group-active:scale-90"
-    >
-      <path
-        d="M12 3v13m0-13 4 4m-4-4-4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

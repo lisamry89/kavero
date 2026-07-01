@@ -1,43 +1,40 @@
 import Image from "next/image";
+import { Brush, Camera, Sparkles, Stethoscope, Trees, Wheat, type LucideIcon } from "lucide-react";
 import { FeedCardType, FeedItem } from "@/lib/types";
 
-const TYPE_CONFIG: Record<
-  FeedCardType,
-  { emoji: string; color: string; bg: string }
-> = {
-  feeding: { emoji: "🌾", color: "#FFB454", bg: "#3A2E1F" },
-  turnout: { emoji: "🐎", color: "#7CFFB2", bg: "#1F3A2B" },
-  grooming: { emoji: "✨", color: "#8B8CF9", bg: "#26264A" },
-  vet: { emoji: "🩺", color: "#FF7A7A", bg: "#3A1F1F" },
-  media: { emoji: "📸", color: "#7CFFB2", bg: "#1F3A2B" },
-  bedding: { emoji: "🧹", color: "#8B8CF9", bg: "#26264A" },
+const TYPE_ICON: Record<FeedCardType, LucideIcon> = {
+  feeding: Wheat,
+  turnout: Trees,
+  grooming: Sparkles,
+  vet: Stethoscope,
+  media: Camera,
+  bedding: Brush,
 };
 
 export function FeedCard({ item }: { item: FeedItem }) {
-  const { emoji, color, bg } = TYPE_CONFIG[item.type];
+  const Icon = TYPE_ICON[item.type];
 
   return (
-    <div className="relative flex gap-4 rounded-3xl border border-kavero-border bg-kavero-surface p-4 shadow-premium">
-      <div
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl"
-        style={{ backgroundColor: bg }}
-      >
-        {emoji}
+    <div className="flex gap-4 rounded-xl border border-neutral-800 bg-neutral-900 p-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-800">
+        <Icon className="h-4 w-4 text-white" strokeWidth={1.5} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-base font-semibold tracking-tight text-white">
+          <h3 className="text-sm font-medium tracking-tight text-white">
             {item.title}
           </h3>
-          <span className="shrink-0 text-xs font-medium text-white/40">
+          <span className="shrink-0 text-[11px] tracking-wide text-neutral-500">
             {item.time}
           </span>
         </div>
-        <p className="text-sm leading-snug text-white/55">{item.subtitle}</p>
+        <p className="text-xs leading-relaxed text-neutral-400">
+          {item.subtitle}
+        </p>
 
         {item.mediaUrl && (
-          <div className="relative mt-2 h-40 w-full overflow-hidden rounded-2xl">
+          <div className="relative mt-2 h-40 w-full overflow-hidden rounded-lg">
             <Image
               src={item.mediaUrl}
               alt={item.title}
@@ -45,17 +42,14 @@ export function FeedCard({ item }: { item: FeedItem }) {
               className="object-cover"
             />
             {item.durationLabel && (
-              <span className="absolute bottom-2 right-2 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md">
+              <span className="absolute bottom-2 right-2 rounded border border-white/20 bg-black/60 px-2 py-0.5 text-[10px] uppercase tracking-widest2 text-white/80">
                 {item.durationLabel}
               </span>
             )}
           </div>
         )}
 
-        <span
-          className="mt-1 w-fit rounded-full px-2.5 py-1 text-xs font-medium"
-          style={{ color, backgroundColor: bg }}
-        >
+        <span className="mt-1.5 text-[11px] tracking-wide text-neutral-500">
           {item.author}
         </span>
       </div>
