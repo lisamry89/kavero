@@ -8,57 +8,48 @@ const STATUS_PROGRESS: Record<HorseStatus, number> = {
   attention: 35,
 };
 
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-white/80 backdrop-blur-sm">
+      {children}
+    </span>
+  );
+}
+
 export function HorseProfileCard({ horse }: { horse: Horse }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-black">
-      <div className="relative h-48 w-full">
-        <Image
-          src={horse.photoUrl}
-          alt={horse.name}
-          fill
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/40" />
+    <div className="relative h-56 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-black">
+      <Image
+        src={horse.photoUrl}
+        alt={horse.name}
+        fill
+        priority
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/40" />
 
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-          <span className="text-[10px] font-medium uppercase tracking-widest2 text-white/60">
-            {horse.stable}
-          </span>
-          <StatusGauge progress={STATUS_PROGRESS[horse.status]} size={40} />
-        </div>
+      <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
+        <span className="text-[10px] font-medium uppercase tracking-widest2 text-white/60">
+          {horse.stable}
+        </span>
+        <StatusGauge progress={STATUS_PROGRESS[horse.status]} size={40} />
+      </div>
 
-        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-4">
-          <span className="text-[10px] font-medium uppercase tracking-widest2 text-white/50">
-            {horse.statusLabel}
-          </span>
-          <h1 className="text-2xl font-medium tracking-tight text-white">
+      <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-white">
             {horse.name}
           </h1>
           <p className="text-xs uppercase tracking-widest2 text-white/40">
             {horse.breed} · {horse.age} ans
           </p>
         </div>
-      </div>
 
-      <div className="grid grid-cols-3 divide-x divide-neutral-800 border-t border-neutral-800">
-        <div className="flex flex-col items-center gap-1 py-3">
-          <span className="text-[10px] uppercase tracking-widest2 text-white/40">
-            Propriétaire
-          </span>
-          <span className="text-sm font-medium text-white">{horse.owner}</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 py-3">
-          <span className="text-[10px] uppercase tracking-widest2 text-white/40">
-            Sorties · 7j
-          </span>
-          <span className="text-sm font-medium text-white">6</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 py-3">
-          <span className="text-[10px] uppercase tracking-widest2 text-white/40">
-            Soins · 7j
-          </span>
-          <span className="text-sm font-medium text-white">14</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Pill>{horse.statusLabel}</Pill>
+          <Pill>{horse.owner}</Pill>
+          <Pill>6 sorties · 7j</Pill>
+          <Pill>14 soins · 7j</Pill>
         </div>
       </div>
     </div>

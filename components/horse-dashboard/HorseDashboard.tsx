@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { FeedItem, HealthEvent, Horse, LogTask } from "@/lib/types";
 import { HorseProfileCard } from "./HorseProfileCard";
-import { ShareStoryButton } from "./ShareStoryButton";
 import { Tabs } from "./Tabs";
 import { FeedTab } from "./FeedTab";
 import { LogTab } from "./LogTab";
@@ -66,9 +65,8 @@ export function HorseDashboard({
 
   return (
     <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-black">
-      <div className="flex flex-col gap-4 px-4 pb-4 pt-4">
+      <div className="px-4 pb-4 pt-4">
         <HorseProfileCard horse={horse} />
-        <ShareStoryButton horse={horse} />
       </div>
 
       <div className="px-4">
