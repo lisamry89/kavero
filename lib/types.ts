@@ -12,15 +12,33 @@ export interface Horse {
   owner: string;
 }
 
-export type FeedCardType = "feeding" | "turnout" | "grooming" | "vet" | "media" | "bedding";
+export type FeedKind = "photo" | "video" | "flash";
 
 export interface FeedItem {
   id: string;
-  type: FeedCardType;
+  kind: FeedKind;
   title: string;
-  subtitle: string;
   time: string;
   author: string;
   mediaUrl?: string;
-  durationLabel?: string;
+}
+
+export interface LogTask {
+  id: string;
+  label: string;
+  generatedNote: string;
+  done: boolean;
+  time?: string;
+  author?: string;
+  requiresPhoto?: boolean;
+}
+
+export type HealthEventType = "vet" | "farrier";
+
+export interface HealthEvent {
+  id: string;
+  type: HealthEventType;
+  title: string;
+  date: string;
+  time: string;
 }

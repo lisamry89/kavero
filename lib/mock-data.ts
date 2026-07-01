@@ -1,4 +1,4 @@
-import { FeedItem, Horse } from "./types";
+import { FeedItem, HealthEvent, Horse, LogTask } from "./types";
 
 export const mockHorse: Horse = {
   id: "eclipse-01",
@@ -16,45 +16,73 @@ export const mockHorse: Horse = {
 export const mockFeed: FeedItem[] = [
   {
     id: "f1",
-    type: "turnout",
-    title: "Sortie au paddock",
-    subtitle: "Balade libre au soleil, très joueur aujourd'hui",
+    kind: "photo",
+    title: "Sortie au paddock effectuée",
     time: "16:45",
-    author: "Julien (palefrenier)",
-    durationLabel: "2h00",
+    author: "Julien",
     mediaUrl:
       "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=1200&auto=format&fit=crop",
   },
   {
     id: "f2",
-    type: "grooming",
-    title: "Pansage complet",
-    subtitle: "Robe brossée, sabots curés et graissés",
-    time: "14:10",
-    author: "Marie (palefrenier)",
+    kind: "flash",
+    title: "Le maréchal-ferrant est passé ce matin",
+    time: "09:10",
+    author: "Écurie des Tilleuls",
   },
+];
+
+export const mockLogTasks: LogTask[] = [
   {
-    id: "f3",
-    type: "feeding",
-    title: "Ration du midi validée",
-    subtitle: "Granulés + foin, appétit excellent",
-    time: "12:00",
-    author: "Julien (palefrenier)",
-  },
-  {
-    id: "f4",
-    type: "bedding",
-    title: "Litière refaite",
-    subtitle: "Box paillé, propre et sec",
-    time: "08:15",
-    author: "Marie (palefrenier)",
-  },
-  {
-    id: "f5",
-    type: "feeding",
-    title: "Ration du matin validée",
-    subtitle: "07:30 précises, comme d'habitude",
+    id: "t1",
+    label: "Ration du matin",
+    generatedNote: "Ration du matin distribuée.",
+    done: true,
     time: "07:30",
-    author: "Julien (palefrenier)",
+    author: "Julien",
+  },
+  {
+    id: "t2",
+    label: "Litière",
+    generatedNote: "Litière refaite, box propre et sec.",
+    done: true,
+    time: "08:15",
+    author: "Marie",
+  },
+  {
+    id: "t3",
+    label: "Pansage complet",
+    generatedNote: "Pansage complet effectué (robe, sabots curés).",
+    done: false,
+  },
+  {
+    id: "t4",
+    label: "Ration du midi",
+    generatedNote: "Ration du midi distribuée.",
+    done: false,
+  },
+  {
+    id: "t5",
+    label: "Sortie paddock",
+    generatedNote: "Sortie au paddock effectuée.",
+    done: false,
+    requiresPhoto: true,
+  },
+];
+
+export const mockHealthEvents: HealthEvent[] = [
+  {
+    id: "h1",
+    type: "vet",
+    title: "Visite de contrôle et vaccination",
+    date: "12 juil.",
+    time: "10:00",
+  },
+  {
+    id: "h2",
+    type: "farrier",
+    title: "Ferrure complète",
+    date: "18 juil.",
+    time: "14:00",
   },
 ];
