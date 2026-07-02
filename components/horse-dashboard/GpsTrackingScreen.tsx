@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin, Pause, Play, Square } from "lucide-react";
 import { RoutePoint, WorkoutSession } from "@/lib/types";
-import { haversineDistanceKm } from "@/lib/geo";
+import { gaitBreakdownFromSegments, classifyRouteSegments, haversineDistanceKm } from "@/lib/geo";
 import { ScreenHeader } from "./ScreenHeader";
 
 type Status = "idle" | "running" | "paused";
@@ -70,8 +70,12 @@ export function GpsTrackingScreen({
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         setGpsStatus("active");
-        const point = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setCoords(point);
+        const point: RoutePoint = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          t: Date.now(),
+        };
+        setCoords({ lat: point.lat, lng: point.lng });
 
         const last = lastPointRef.current;
         if (!last) {
@@ -121,9 +125,11 @@ export function GpsTrackingScreen({
     pauseTracking();
 
     const totalMinutes = Math.max(1, Math.round(elapsed / 60));
-    const pas = Math.round(totalMinutes * 0.4);
-    const trot = Math.round(totalMinutes * 0.35);
-    const galop = Math.max(0, totalMinutes - pas - trot);
+    const route = routeRef.current;
+    const gaits =
+      route.length >= 2
+        ? gaitBreakdownFromSegments(classifyRouteSegments(route), totalMinutes)
+        : { arret: totalMinutes, pas: 0, trot: 0, galop: 0 };
     const now = new Date();
 
     onStop({
@@ -133,9 +139,9 @@ export function GpsTrackingScreen({
       author,
       duration: `${totalMinutes} min`,
       distance: `${distanceKm.toFixed(2)} km`,
-      gaits: { pas, trot, galop },
+      gaits,
       memories: [],
-      route: routeRef.current,
+      route,
     });
   }
 

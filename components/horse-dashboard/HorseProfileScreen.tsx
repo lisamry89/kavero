@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { Camera, FileImage, FileText, Plus } from "lucide-react";
+import { Camera, Download, FileImage, FileText, Plus, X } from "lucide-react";
 import { DocumentKind, Horse, HorseDocument, HorseGender, Pedigree } from "@/lib/types";
+import { readFileAsDataUrl } from "@/lib/file";
 import { ScreenHeader } from "./ScreenHeader";
 
 const GENDER_LABEL: Record<HorseGender, string> = {
@@ -37,7 +38,7 @@ function PedigreeNode({ label, muted = false }: { label: string; muted?: boolean
   );
 }
 
-function DocumentRow({ doc }: { doc: HorseDocument }) {
+function DocumentRow({ doc, onPreview }: { doc: HorseDocument; onPreview: () => void }) {
   const Icon = doc.kind === "image" ? FileImage : FileText;
   const content = (
     <>
@@ -53,20 +54,53 @@ function DocumentRow({ doc }: { doc: HorseDocument }) {
 
   if (doc.url) {
     return (
-      <a
-        href={doc.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 active:scale-[0.98]"
+      <button
+        onClick={onPreview}
+        className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-left active:scale-[0.98]"
       >
         {content}
-      </a>
+      </button>
     );
   }
 
   return (
     <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3">
       {content}
+    </div>
+  );
+}
+
+function DocumentPreview({ doc, onClose }: { doc: HorseDocument; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[70] mx-auto flex w-full max-w-md flex-col bg-black">
+      <div className="flex items-center justify-between border-b border-neutral-900 px-4 py-4">
+        <span className="truncate pr-2 text-sm font-medium text-white">{doc.name}</span>
+        <div className="flex shrink-0 items-center gap-2">
+          <a
+            href={doc.url}
+            download={doc.name}
+            aria-label="Télécharger"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-800 active:scale-90"
+          >
+            <Download className="h-4 w-4 text-white" strokeWidth={1.5} />
+          </a>
+          <button
+            onClick={onClose}
+            aria-label="Fermer"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-800 active:scale-90"
+          >
+            <X className="h-4 w-4 text-white" strokeWidth={1.5} />
+          </button>
+        </div>
+      </div>
+      <div className="relative flex-1 bg-neutral-950">
+        {doc.kind === "image" ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={doc.url} alt={doc.name} className="h-full w-full object-contain" />
+        ) : (
+          <iframe src={doc.url} title={doc.name} className="h-full w-full" />
+        )}
+      </div>
     </div>
   );
 }
@@ -90,8 +124,9 @@ export function HorseProfileScreen({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const [previewDoc, setPreviewDoc] = useState<HorseDocument | null>(null);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
       const kind: DocumentKind = file.type.startsWith("image/") ? "image" : "pdf";
@@ -100,16 +135,16 @@ export function HorseProfileScreen({
         name: file.name.replace(/\.[^/.]+$/, ""),
         kind,
         addedAt: new Date().toLocaleDateString("fr-FR"),
-        url: URL.createObjectURL(file),
+        url: await readFileAsDataUrl(file),
       });
     }
     e.target.value = "";
   }
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      onPhotoChange(URL.createObjectURL(file));
+      onPhotoChange(await readFileAsDataUrl(file));
     }
     e.target.value = "";
   }
@@ -214,12 +249,14 @@ export function HorseProfileScreen({
           ) : (
             <div className="flex flex-col gap-2">
               {documents.map((doc) => (
-                <DocumentRow key={doc.id} doc={doc} />
+                <DocumentRow key={doc.id} doc={doc} onPreview={() => setPreviewDoc(doc)} />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {previewDoc && <DocumentPreview doc={previewDoc} onClose={() => setPreviewDoc(null)} />}
     </div>
   );
 }

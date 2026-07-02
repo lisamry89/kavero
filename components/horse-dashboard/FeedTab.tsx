@@ -1,32 +1,32 @@
 import Image from "next/image";
-import { ChevronRight, Clock } from "lucide-react";
+import { ChevronRight, Clock, MapPin } from "lucide-react";
 import { FeedItem, RoutePoint, WorkoutStats } from "@/lib/types";
 import { pathFromProjected, projectRoute } from "@/lib/geo";
 
-const FALLBACK_ROUTE_D =
-  "M40 160 C 70 100, 60 60, 110 55 S 160 90, 150 40 S 210 10, 240 45" +
-  " S 220 110, 270 120 S 340 100, 360 150";
-
 function RouteMap({ route }: { route?: RoutePoint[] }) {
-  const projected = route && route.length >= 2 ? projectRoute(route, 400, 200) : null;
-  const d = projected ? pathFromProjected(projected) : FALLBACK_ROUTE_D;
-  const start = projected?.[0];
-  const end = projected?.[projected.length - 1];
+  if (!route || route.length < 2) {
+    return (
+      <div className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-xl bg-neutral-950">
+        <MapPin className="h-5 w-5 text-neutral-700" strokeWidth={1.5} />
+        <p className="text-[10px] uppercase tracking-widest2 text-neutral-600">
+          Aucun déplacement enregistré
+        </p>
+      </div>
+    );
+  }
+
+  const projected = projectRoute(route, 400, 200);
+  const d = pathFromProjected(projected);
+  const start = projected[0];
+  const end = projected[projected.length - 1];
 
   return (
     <div className="relative h-40 w-full overflow-hidden rounded-xl bg-neutral-950">
       <svg viewBox="0 0 400 200" className="h-full w-full" preserveAspectRatio="none">
         <path d={d} fill="none" stroke="#525252" strokeWidth="6" strokeLinecap="round" />
         <path d={d} fill="none" stroke="#e5e5e5" strokeWidth="2" strokeLinecap="round" />
-        <circle cx={start?.x ?? 40} cy={start?.y ?? 160} r="5" fill="#e5e5e5" />
-        <circle
-          cx={end?.x ?? 360}
-          cy={end?.y ?? 150}
-          r="5"
-          fill="none"
-          stroke="#e5e5e5"
-          strokeWidth="2"
-        />
+        <circle cx={start.x} cy={start.y} r="5" fill="#e5e5e5" />
+        <circle cx={end.x} cy={end.y} r="5" fill="none" stroke="#e5e5e5" strokeWidth="2" />
       </svg>
     </div>
   );

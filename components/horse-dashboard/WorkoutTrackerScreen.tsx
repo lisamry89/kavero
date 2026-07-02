@@ -3,42 +3,26 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { MapPin, Plus } from "lucide-react";
-import { Horse, RoutePoint, WorkoutSession } from "@/lib/types";
-import { pathFromProjected, projectRoute } from "@/lib/geo";
+import { Gait, Horse, RoutePoint, WorkoutSession } from "@/lib/types";
+import { classifyRouteSegments, pathFromProjected, projectRoute } from "@/lib/geo";
+import { readFileAsDataUrl } from "@/lib/file";
 import { ScreenHeader } from "./ScreenHeader";
 
-const GAIT_COLOR = {
+const GAIT_COLOR: Record<Gait, string> = {
+  arret: "#6b7280",
   pas: "#4ade80",
   trot: "#fb923c",
   galop: "#f87171",
-} as const;
+};
 
-const GAIT_LABEL = {
+const GAIT_LABEL: Record<Gait, string> = {
+  arret: "Arrêt",
   pas: "Pas",
   trot: "Trot",
   galop: "Galop",
-} as const;
+};
 
-const FALLBACK_SEGMENTS = [
-  { color: GAIT_COLOR.pas, d: "M40 170 C 70 150, 90 120, 80 95 S 130 60, 150 90" },
-  { color: GAIT_COLOR.trot, d: "M150 90 S 190 130, 220 100 S 250 40, 280 60" },
-  { color: GAIT_COLOR.galop, d: "M280 60 S 300 100, 330 90 S 350 130, 360 165" },
-];
-
-function buildRouteSegments(route: RoutePoint[] | undefined) {
-  if (!route || route.length < 2) return null;
-
-  const projected = projectRoute(route, 400, 220);
-  const n = projected.length;
-  const i1 = Math.max(1, Math.floor(n / 3));
-  const i2 = Math.max(i1 + 1, Math.floor((2 * n) / 3));
-
-  return [
-    { color: GAIT_COLOR.pas, d: pathFromProjected(projected.slice(0, i1 + 1)) },
-    { color: GAIT_COLOR.trot, d: pathFromProjected(projected.slice(i1, i2 + 1)) },
-    { color: GAIT_COLOR.galop, d: pathFromProjected(projected.slice(i2)) },
-  ];
-}
+const GAIT_ORDER: Gait[] = ["arret", "pas", "trot", "galop"];
 
 function GaitRouteMap({
   distance,
@@ -49,7 +33,22 @@ function GaitRouteMap({
   duration: string;
   route?: RoutePoint[];
 }) {
-  const segments = buildRouteSegments(route) ?? FALLBACK_SEGMENTS;
+  if (!route || route.length < 2) {
+    return (
+      <div className="relative flex h-48 w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl bg-neutral-950">
+        <MapPin className="h-6 w-6 text-neutral-700" strokeWidth={1.5} />
+        <p className="text-xs uppercase tracking-widest2 text-neutral-600">
+          Aucun déplacement enregistré
+        </p>
+        <div className="absolute inset-x-0 bottom-3 text-center text-sm font-light text-white">
+          {duration} | {distance}
+        </div>
+      </div>
+    );
+  }
+
+  const projected = projectRoute(route, 400, 220);
+  const segments = classifyRouteSegments(route);
 
   return (
     <div className="relative h-48 w-full overflow-hidden rounded-xl bg-neutral-950">
@@ -57,9 +56,9 @@ function GaitRouteMap({
         {segments.map((seg, i) => (
           <path
             key={i}
-            d={seg.d}
+            d={pathFromProjected([projected[i], projected[i + 1]])}
             fill="none"
-            stroke={seg.color}
+            stroke={GAIT_COLOR[seg.gait]}
             strokeWidth="4"
             strokeLinecap="round"
           />
@@ -67,13 +66,16 @@ function GaitRouteMap({
       </svg>
       <MapPin
         className="absolute h-5 w-5 -translate-x-1/2 -translate-y-full text-white drop-shadow"
-        style={{ left: "10%", top: "77%" }}
+        style={{ left: `${(projected[0].x / 400) * 100}%`, top: `${(projected[0].y / 220) * 100}%` }}
         fill="white"
         strokeWidth={1.5}
       />
       <MapPin
         className="absolute h-5 w-5 -translate-x-1/2 -translate-y-full text-white drop-shadow"
-        style={{ left: "90%", top: "75%" }}
+        style={{
+          left: `${(projected[projected.length - 1].x / 400) * 100}%`,
+          top: `${(projected[projected.length - 1].y / 220) * 100}%`,
+        }}
         strokeWidth={1.5}
       />
       <div className="absolute inset-x-0 bottom-3 text-center text-sm font-light text-white">
@@ -95,12 +97,13 @@ export function WorkoutTrackerScreen({
   onAddMemory: (url: string) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const totalGaitMinutes = session.gaits.pas + session.gaits.trot + session.gaits.galop;
+  const totalGaitMinutes =
+    session.gaits.arret + session.gaits.pas + session.gaits.trot + session.gaits.galop;
 
-  function handleAddMemory(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleAddMemory(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      onAddMemory(URL.createObjectURL(file));
+      onAddMemory(await readFileAsDataUrl(file));
     }
     e.target.value = "";
   }
@@ -129,8 +132,8 @@ export function WorkoutTrackerScreen({
             duration={session.duration}
             route={session.route}
           />
-          <div className="flex items-center justify-center gap-4">
-            {(Object.keys(GAIT_LABEL) as (keyof typeof GAIT_LABEL)[]).map((key) => (
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            {GAIT_ORDER.map((key) => (
               <span key={key} className="flex items-center gap-1.5 text-xs text-neutral-400">
                 <span
                   className="h-1.5 w-1.5 rounded-full"
@@ -156,7 +159,7 @@ export function WorkoutTrackerScreen({
         <div className="flex flex-col gap-3">
           <h2 className="font-serif text-base text-white">Répartition des allures</h2>
           <div className="flex flex-col gap-3">
-            {(Object.keys(GAIT_LABEL) as (keyof typeof GAIT_LABEL)[]).map((key) => (
+            {GAIT_ORDER.filter((key) => session.gaits[key] > 0).map((key) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-white">{GAIT_LABEL[key]}</span>

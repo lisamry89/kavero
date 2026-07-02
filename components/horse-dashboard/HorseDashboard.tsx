@@ -26,6 +26,7 @@ import { GpsTrackingScreen } from "./GpsTrackingScreen";
 import { WorkoutHistoryScreen } from "./WorkoutHistoryScreen";
 import { QuickAddButton } from "./QuickAddButton";
 import { BottomNav, NavId } from "./BottomNav";
+import { usePersistentState } from "@/lib/use-persistent-state";
 
 const STAFF_NAME = "Julien";
 
@@ -63,14 +64,20 @@ export function HorseDashboard({
   ];
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [activeNav, setActiveNav] = useState<NavId>("home");
-  const [feedItems, setFeedItems] = useState(feed);
+  const [feedItems, setFeedItems] = usePersistentState(`kavero:${horse.id}:feed`, feed);
   const [tasks, setTasks] = useState(logTasks);
   const [events, setEvents] = useState(healthEvents);
   const [storyOpen, setStoryOpen] = useState(false);
-  const [sessions, setSessions] = useState(workoutHistory);
+  const [sessions, setSessions] = usePersistentState(
+    `kavero:${horse.id}:workoutHistory`,
+    workoutHistory
+  );
   const [viewingSessionId, setViewingSessionId] = useState<string | null>(null);
-  const [photoUrl, setPhotoUrl] = useState(horse.photoUrl);
-  const [horseDocuments, setHorseDocuments] = useState(documents);
+  const [photoUrl, setPhotoUrl] = usePersistentState(`kavero:${horse.id}:photoUrl`, horse.photoUrl);
+  const [horseDocuments, setHorseDocuments] = usePersistentState(
+    `kavero:${horse.id}:documents`,
+    documents
+  );
 
   const hasUnseenStory = feedItems.some((item) => !item.viewed);
   const latestFeedItem = feedItems[0];

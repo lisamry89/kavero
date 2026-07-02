@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Camera, Check, Fence, Shovel, Sparkles, Wheat, type LucideIcon } from "lucide-react";
 import { LogTask } from "@/lib/types";
+import { readFileAsDataUrl } from "@/lib/file";
 
 const TASK_ICON: Record<string, LucideIcon> = {
   t1: Wheat,
@@ -32,11 +33,11 @@ export function LogTab({
     onComplete(task.id);
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     const taskId = pendingTaskId.current;
     if (file && taskId) {
-      onComplete(taskId, URL.createObjectURL(file));
+      onComplete(taskId, await readFileAsDataUrl(file));
     }
     pendingTaskId.current = null;
     e.target.value = "";

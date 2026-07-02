@@ -51,6 +51,7 @@ export interface WorkoutStats {
 export interface RoutePoint {
   lat: number;
   lng: number;
+  t: number;
 }
 
 export interface FeedItem {
@@ -122,7 +123,10 @@ export interface AppNotification {
   time: string;
 }
 
+export type Gait = "arret" | "pas" | "trot" | "galop";
+
 export interface GaitBreakdown {
+  arret: number;
   pas: number;
   trot: number;
   galop: number;
