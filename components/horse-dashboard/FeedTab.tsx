@@ -1,6 +1,63 @@
 import Image from "next/image";
 import { Clock } from "lucide-react";
-import { FeedItem } from "@/lib/types";
+import { FeedItem, WorkoutStats } from "@/lib/types";
+
+function RouteMap() {
+  return (
+    <div className="relative h-40 w-full overflow-hidden rounded-xl bg-neutral-950">
+      <svg viewBox="0 0 400 200" className="h-full w-full" preserveAspectRatio="none">
+        <path
+          d="M40 160 C 70 100, 60 60, 110 55 S 160 90, 150 40 S 210 10, 240 45
+             S 220 110, 270 120 S 340 100, 360 150"
+          fill="none"
+          stroke="#525252"
+          strokeWidth="6"
+          strokeLinecap="round"
+        />
+        <path
+          d="M40 160 C 70 100, 60 60, 110 55 S 160 90, 150 40 S 210 10, 240 45
+             S 220 110, 270 120 S 340 100, 360 150"
+          fill="none"
+          stroke="#e5e5e5"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle cx="40" cy="160" r="5" fill="#e5e5e5" />
+        <circle cx="360" cy="150" r="5" fill="none" stroke="#e5e5e5" strokeWidth="2" />
+      </svg>
+    </div>
+  );
+}
+
+function WorkoutStatCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1 py-1">
+      <span className="text-sm font-light text-white">{value}</span>
+      <span className="text-[9px] uppercase tracking-widest2 text-neutral-600">{label}</span>
+    </div>
+  );
+}
+
+function WorkoutCard({ item }: { item: FeedItem & { stats: WorkoutStats } }) {
+  return (
+    <div className="flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
+      <div className="flex flex-col gap-0.5">
+        <h3 className="text-sm font-medium tracking-tight text-white">{item.title}</h3>
+        <span className="text-[11px] tracking-wide text-neutral-500">
+          {item.author} • {item.time}
+        </span>
+      </div>
+
+      <RouteMap />
+
+      <div className="grid grid-cols-3 divide-x divide-neutral-800 border-t border-neutral-800 pt-3">
+        <WorkoutStatCell label="Durée" value={item.stats.duration} />
+        <WorkoutStatCell label="Distance" value={item.stats.distance} />
+        <WorkoutStatCell label="Allure" value={item.stats.topSpeed} />
+      </div>
+    </div>
+  );
+}
 
 function MediaCard({ item }: { item: FeedItem }) {
   return (
@@ -46,13 +103,15 @@ export function FeedTab({ items }: { items: FeedItem[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {items.map((item) =>
-        item.mediaUrl ? (
-          <MediaCard key={item.id} item={item} />
-        ) : (
-          <FlashRow key={item.id} item={item} />
-        )
-      )}
+      {items.map((item) => {
+        if (item.kind === "workout" && item.stats) {
+          return <WorkoutCard key={item.id} item={item as FeedItem & { stats: WorkoutStats }} />;
+        }
+        if (item.mediaUrl) {
+          return <MediaCard key={item.id} item={item} />;
+        }
+        return <FlashRow key={item.id} item={item} />;
+      })}
     </div>
   );
 }

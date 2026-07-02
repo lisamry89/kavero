@@ -49,6 +49,16 @@ export const mockFeed: FeedItem[] = [
     viewed: false,
   },
   {
+    id: "strava-1",
+    kind: "workout",
+    title: "Travail sur le plat & Cadence",
+    time: "14:20",
+    author: "Camille D.",
+    stats: { duration: "52 min", distance: "6.1 km", topSpeed: "28 km/h" },
+    mapPlaceholder: true,
+    viewed: false,
+  },
+  {
     id: "f2",
     kind: "flash",
     title: "Le maréchal-ferrant est passé ce matin",
