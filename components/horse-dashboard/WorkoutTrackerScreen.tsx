@@ -1,12 +1,17 @@
 "use client";
 
 import { useRef } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { MapPin, Plus } from "lucide-react";
-import { Gait, Horse, RoutePoint, WorkoutSession } from "@/lib/types";
-import { classifyRouteSegments, pathFromProjected, projectRoute } from "@/lib/geo";
+import { Gait, Horse, WorkoutSession } from "@/lib/types";
 import { readFileAsDataUrl } from "@/lib/file";
 import { ScreenHeader } from "./ScreenHeader";
+
+const RouteMapView = dynamic(
+  () => import("./RouteMapView").then((m) => m.RouteMapView),
+  { ssr: false }
+);
 
 const GAIT_COLOR: Record<Gait, string> = {
   arret: "#6b7280",
@@ -24,65 +29,11 @@ const GAIT_LABEL: Record<Gait, string> = {
 
 const GAIT_ORDER: Gait[] = ["arret", "pas", "trot", "galop"];
 
-function GaitRouteMap({
-  distance,
-  duration,
-  route,
-}: {
-  distance: string;
-  duration: string;
-  route?: RoutePoint[];
-}) {
-  if (!route || route.length < 2) {
-    return (
-      <div className="relative flex h-48 w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl bg-neutral-950">
-        <MapPin className="h-6 w-6 text-neutral-700" strokeWidth={1.5} />
-        <p className="text-xs uppercase tracking-widest2 text-neutral-600">
-          Aucun déplacement enregistré
-        </p>
-        <div className="absolute inset-x-0 bottom-3 text-center text-sm font-light text-white">
-          {duration} | {distance}
-        </div>
-      </div>
-    );
-  }
-
-  const projected = projectRoute(route, 400, 220);
-  const segments = classifyRouteSegments(route);
-
-  return (
-    <div className="relative h-48 w-full overflow-hidden rounded-xl bg-neutral-950">
-      <svg viewBox="0 0 400 220" className="h-full w-full" preserveAspectRatio="none">
-        {segments.map((seg, i) => (
-          <path
-            key={i}
-            d={pathFromProjected([projected[i], projected[i + 1]])}
-            fill="none"
-            stroke={GAIT_COLOR[seg.gait]}
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-        ))}
-      </svg>
-      <MapPin
-        className="absolute h-5 w-5 -translate-x-1/2 -translate-y-full text-white drop-shadow"
-        style={{ left: `${(projected[0].x / 400) * 100}%`, top: `${(projected[0].y / 220) * 100}%` }}
-        fill="white"
-        strokeWidth={1.5}
-      />
-      <MapPin
-        className="absolute h-5 w-5 -translate-x-1/2 -translate-y-full text-white drop-shadow"
-        style={{
-          left: `${(projected[projected.length - 1].x / 400) * 100}%`,
-          top: `${(projected[projected.length - 1].y / 220) * 100}%`,
-        }}
-        strokeWidth={1.5}
-      />
-      <div className="absolute inset-x-0 bottom-3 text-center text-sm font-light text-white">
-        {duration} | {distance}
-      </div>
-    </div>
-  );
+function averageSpeedKmh(distance: string, duration: string) {
+  const km = parseFloat(distance);
+  const minutes = parseFloat(duration);
+  if (!minutes) return 0;
+  return km / (minutes / 60);
 }
 
 export function WorkoutTrackerScreen({
@@ -99,6 +50,7 @@ export function WorkoutTrackerScreen({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const totalGaitMinutes =
     session.gaits.arret + session.gaits.pas + session.gaits.trot + session.gaits.galop;
+  const hasRoute = session.route && session.route.length >= 2;
 
   async function handleAddMemory(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -127,11 +79,24 @@ export function WorkoutTrackerScreen({
 
       <div className="flex flex-col gap-8 px-4 pb-10">
         <div className="flex flex-col gap-3">
-          <GaitRouteMap
-            distance={session.distance}
-            duration={session.duration}
-            route={session.route}
-          />
+          {hasRoute ? (
+            <div className="relative h-56 w-full overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950">
+              <RouteMapView route={session.route!} />
+              <div className="pointer-events-none absolute inset-x-0 bottom-3 text-center text-sm font-light text-white drop-shadow">
+                {session.duration} | {session.distance}
+              </div>
+            </div>
+          ) : (
+            <div className="flex h-56 w-full flex-col items-center justify-center gap-2 rounded-xl border border-neutral-800 bg-neutral-950">
+              <MapPin className="h-6 w-6 text-neutral-700" strokeWidth={1.5} />
+              <p className="text-xs uppercase tracking-widest2 text-neutral-600">
+                Aucun déplacement enregistré
+              </p>
+              <p className="text-sm font-light text-white">
+                {session.duration} | {session.distance}
+              </p>
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-center gap-4">
             {GAIT_ORDER.map((key) => (
               <span key={key} className="flex items-center gap-1.5 text-xs text-neutral-400">
@@ -144,14 +109,20 @@ export function WorkoutTrackerScreen({
             ))}
           </div>
 
-          <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-neutral-800">
-            <div className="border-r border-neutral-800 px-4 py-3 text-center">
+          <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-neutral-800">
+            <div className="border-r border-neutral-800 px-3 py-3 text-center">
               <p className="text-xs uppercase tracking-widest2 text-neutral-500">Durée</p>
               <p className="mt-1 text-sm text-white">{session.duration}</p>
             </div>
-            <div className="px-4 py-3 text-center">
+            <div className="border-r border-neutral-800 px-3 py-3 text-center">
               <p className="text-xs uppercase tracking-widest2 text-neutral-500">Distance</p>
               <p className="mt-1 text-sm text-white">{session.distance}</p>
+            </div>
+            <div className="px-3 py-3 text-center">
+              <p className="text-xs uppercase tracking-widest2 text-neutral-500">Vitesse moy.</p>
+              <p className="mt-1 text-sm text-white">
+                {averageSpeedKmh(session.distance, session.duration).toFixed(1)} km/h
+              </p>
             </div>
           </div>
         </div>

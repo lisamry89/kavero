@@ -1,15 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { MapPin, Pause, Play, Square } from "lucide-react";
-import { RoutePoint, WorkoutSession } from "@/lib/types";
-import { gaitBreakdownFromSegments, classifyRouteSegments, haversineDistanceKm } from "@/lib/geo";
+import { Gait, RoutePoint, WorkoutSession } from "@/lib/types";
+import { classifyGait, gaitBreakdownFromSegments, classifyRouteSegments, haversineDistanceKm } from "@/lib/geo";
 import { ScreenHeader } from "./ScreenHeader";
+
+const RouteMapView = dynamic(
+  () => import("./RouteMapView").then((m) => m.RouteMapView),
+  { ssr: false }
+);
 
 type Status = "idle" | "running" | "paused";
 type GpsStatus = "acquiring" | "active" | "unavailable";
 
 const MIN_DELTA_KM = 0.002;
+
+const GAIT_LABEL: Record<Gait, string> = {
+  arret: "Arrêt",
+  pas: "Pas",
+  trot: "Trot",
+  galop: "Galop",
+};
 
 function formatElapsed(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60)
@@ -44,11 +57,11 @@ export function GpsTrackingScreen({
   const [elapsed, setElapsed] = useState(0);
   const [distanceKm, setDistanceKm] = useState(0);
   const [gpsStatus, setGpsStatus] = useState<GpsStatus>("acquiring");
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [route, setRoute] = useState<RoutePoint[]>([]);
+  const [currentSpeedKmh, setCurrentSpeedKmh] = useState(0);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const watchIdRef = useRef<number | null>(null);
-  const routeRef = useRef<RoutePoint[]>([]);
   const lastPointRef = useRef<RoutePoint | null>(null);
 
   useEffect(() => {
@@ -75,19 +88,22 @@ export function GpsTrackingScreen({
           lng: pos.coords.longitude,
           t: Date.now(),
         };
-        setCoords({ lat: point.lat, lng: point.lng });
 
         const last = lastPointRef.current;
         if (!last) {
           lastPointRef.current = point;
-          routeRef.current = [point];
+          setRoute([point]);
           return;
         }
         const delta = haversineDistanceKm(last, point);
         if (delta > MIN_DELTA_KM) {
+          const durationH = Math.max((point.t - last.t) / 3_600_000, 1 / 3600);
+          const instantSpeed =
+            pos.coords.speed != null ? pos.coords.speed * 3.6 : delta / durationH;
+          setCurrentSpeedKmh(instantSpeed);
           setDistanceKm((d) => d + delta);
           lastPointRef.current = point;
-          routeRef.current = [...routeRef.current, point];
+          setRoute((prev) => [...prev, point]);
         }
       },
       () => setGpsStatus("unavailable"),
@@ -104,6 +120,7 @@ export function GpsTrackingScreen({
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
+    setCurrentSpeedKmh(0);
   }
 
   function handlePlay() {
@@ -125,7 +142,6 @@ export function GpsTrackingScreen({
     pauseTracking();
 
     const totalMinutes = Math.max(1, Math.round(elapsed / 60));
-    const route = routeRef.current;
     const gaits =
       route.length >= 2
         ? gaitBreakdownFromSegments(classifyRouteSegments(route), totalMinutes)
@@ -145,11 +161,27 @@ export function GpsTrackingScreen({
     });
   }
 
+  const avgSpeedKmh = elapsed > 0 ? distanceKm / (elapsed / 3600) : 0;
+  const currentGait = classifyGait(currentSpeedKmh);
+
   return (
     <div className="flex h-full flex-col">
       <ScreenHeader onBack={onCancel} title="Activité GPS" />
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-10 px-6">
+      <div className="relative h-56 w-full shrink-0 overflow-hidden bg-neutral-950">
+        {route.length > 0 ? (
+          <RouteMapView route={route} live />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-2">
+            <MapPin className="h-6 w-6 text-neutral-700" strokeWidth={1.5} />
+            <p className="text-xs uppercase tracking-widest2 text-neutral-600">
+              En attente de la position GPS
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-4">
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full ${STATUS_DOT[gpsStatus]}`} />
           <span className="text-xs uppercase tracking-widest2 text-neutral-500">
@@ -161,14 +193,25 @@ export function GpsTrackingScreen({
           {formatElapsed(elapsed)}
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-neutral-400">
-          <MapPin className="h-4 w-4" strokeWidth={1.5} />
-          {coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : "—"}
-        </div>
-
-        <div className="text-center">
-          <p className="text-2xl font-light text-white">{distanceKm.toFixed(2)} km</p>
-          <p className="text-xs uppercase tracking-widest2 text-neutral-600">Distance</p>
+        <div className="grid w-full grid-cols-3 gap-3">
+          <div className="text-center">
+            <p className="text-lg font-light text-white">{distanceKm.toFixed(2)}</p>
+            <p className="text-[10px] uppercase tracking-widest2 text-neutral-600">km</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-light text-white">
+              {status === "running" ? currentSpeedKmh.toFixed(1) : avgSpeedKmh.toFixed(1)}
+            </p>
+            <p className="text-[10px] uppercase tracking-widest2 text-neutral-600">
+              {status === "running" ? "km/h actuel" : "km/h moy."}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-light text-white">
+              {status === "running" ? GAIT_LABEL[currentGait] : "—"}
+            </p>
+            <p className="text-[10px] uppercase tracking-widest2 text-neutral-600">Allure</p>
+          </div>
         </div>
       </div>
 
