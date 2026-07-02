@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Clock } from "lucide-react";
+import { ChevronRight, Clock } from "lucide-react";
 import { FeedItem, WorkoutStats } from "@/lib/types";
 
 function RouteMap() {
@@ -38,9 +38,19 @@ function WorkoutStatCell({ label, value }: { label: string; value: string }) {
   );
 }
 
-function WorkoutCard({ item }: { item: FeedItem & { stats: WorkoutStats } }) {
+function WorkoutCard({
+  item,
+  onOpen,
+}: {
+  item: FeedItem & { stats: WorkoutStats };
+  onOpen?: () => void;
+}) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
+    <button
+      onClick={onOpen}
+      disabled={!onOpen}
+      className="flex flex-col gap-4 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 text-left"
+    >
       <div className="flex flex-col gap-0.5">
         <h3 className="text-sm font-medium tracking-tight text-white">{item.title}</h3>
         <span className="text-[11px] tracking-wide text-neutral-500">
@@ -55,7 +65,7 @@ function WorkoutCard({ item }: { item: FeedItem & { stats: WorkoutStats } }) {
         <WorkoutStatCell label="Distance" value={item.stats.distance} />
         <WorkoutStatCell label="Allure" value={item.stats.topSpeed} />
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -92,26 +102,48 @@ function FlashRow({ item }: { item: FeedItem }) {
   );
 }
 
-export function FeedTab({ items }: { items: FeedItem[] }) {
-  if (items.length === 0) {
-    return (
-      <p className="py-10 text-center text-xs uppercase tracking-widest2 text-neutral-600">
-        Aucun moment partagé aujourd&apos;hui
-      </p>
-    );
-  }
-
+export function FeedTab({
+  items,
+  onOpenWorkout,
+  onOpenHistory,
+}: {
+  items: FeedItem[];
+  onOpenWorkout: (workoutId: string) => void;
+  onOpenHistory: () => void;
+}) {
   return (
     <div className="flex flex-col gap-4">
-      {items.map((item) => {
-        if (item.kind === "workout" && item.stats) {
-          return <WorkoutCard key={item.id} item={item as FeedItem & { stats: WorkoutStats }} />;
-        }
-        if (item.mediaUrl) {
-          return <MediaCard key={item.id} item={item} />;
-        }
-        return <FlashRow key={item.id} item={item} />;
-      })}
+      <button
+        onClick={onOpenHistory}
+        className="flex items-center justify-between rounded-xl border border-neutral-900 px-4 py-3"
+      >
+        <span className="text-xs uppercase tracking-widest2 text-neutral-400">
+          Historique des activités
+        </span>
+        <ChevronRight className="h-4 w-4 text-neutral-600" strokeWidth={1.5} />
+      </button>
+
+      {items.length === 0 ? (
+        <p className="py-10 text-center text-xs uppercase tracking-widest2 text-neutral-600">
+          Aucun moment partagé aujourd&apos;hui
+        </p>
+      ) : (
+        items.map((item) => {
+          if (item.kind === "workout" && item.stats) {
+            return (
+              <WorkoutCard
+                key={item.id}
+                item={item as FeedItem & { stats: WorkoutStats }}
+                onOpen={item.workoutId ? () => onOpenWorkout(item.workoutId!) : undefined}
+              />
+            );
+          }
+          if (item.mediaUrl) {
+            return <MediaCard key={item.id} item={item} />;
+          }
+          return <FlashRow key={item.id} item={item} />;
+        })
+      )}
     </div>
   );
 }

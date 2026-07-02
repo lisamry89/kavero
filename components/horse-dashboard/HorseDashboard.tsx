@@ -10,7 +10,7 @@ import {
   HorseDocument,
   LogTask,
   Pedigree,
-  WorkoutDetail,
+  WorkoutSession,
 } from "@/lib/types";
 import { HorseHeader } from "./HorseHeader";
 import { Tabs } from "./Tabs";
@@ -22,6 +22,8 @@ import { MessagingScreen } from "./MessagingScreen";
 import { NotificationsScreen } from "./NotificationsScreen";
 import { StoryViewer } from "./StoryViewer";
 import { WorkoutTrackerScreen } from "./WorkoutTrackerScreen";
+import { GpsTrackingScreen } from "./GpsTrackingScreen";
+import { WorkoutHistoryScreen } from "./WorkoutHistoryScreen";
 import { QuickAddButton } from "./QuickAddButton";
 import { BottomNav, NavId } from "./BottomNav";
 
@@ -43,7 +45,7 @@ export function HorseDashboard({
   documents,
   conversations,
   notifications,
-  workoutDetail,
+  workoutHistory,
 }: {
   horse: Horse;
   feed: FeedItem[];
@@ -53,7 +55,7 @@ export function HorseDashboard({
   documents: HorseDocument[];
   conversations: Conversation[];
   notifications: AppNotification[];
-  workoutDetail: WorkoutDetail;
+  workoutHistory: WorkoutSession[];
 }) {
   const TABS = [
     { id: "feed", label: horse.name },
@@ -65,9 +67,12 @@ export function HorseDashboard({
   const [tasks, setTasks] = useState(logTasks);
   const [events, setEvents] = useState(healthEvents);
   const [storyOpen, setStoryOpen] = useState(false);
+  const [sessions, setSessions] = useState(workoutHistory);
+  const [viewingSessionId, setViewingSessionId] = useState<string | null>(null);
 
   const hasUnseenStory = feedItems.some((item) => !item.viewed);
   const latestFeedItem = feedItems[0];
+  const viewingSession = sessions.find((s) => s.id === viewingSessionId);
 
   function goHome() {
     setActiveNav("home");
@@ -106,6 +111,49 @@ export function HorseDashboard({
     }
   }
 
+  function handleOpenWorkout(id: string) {
+    setViewingSessionId(id);
+    setActiveNav("workout-tracker");
+  }
+
+  function handleStopGps(draft: Omit<WorkoutSession, "id">) {
+    const id = `w-${Date.now()}`;
+    const session: WorkoutSession = { id, ...draft };
+
+    setSessions((prev) => [session, ...prev]);
+    setFeedItems((prev) => [
+      {
+        id: `f-${id}`,
+        kind: "workout",
+        title: session.title,
+        time: session.time,
+        author: session.author,
+        stats: {
+          duration: session.duration,
+          distance: session.distance,
+          topSpeed: `${
+            session.gaits.galop > 0 ? "Galop" : session.gaits.trot > 0 ? "Trot" : "Pas"
+          }`,
+        },
+        mapPlaceholder: true,
+        viewed: true,
+        workoutId: id,
+      },
+      ...prev,
+    ]);
+    setViewingSessionId(id);
+    setActiveNav("workout-tracker");
+  }
+
+  function handleAddMemory(url: string) {
+    if (!viewingSessionId) return;
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === viewingSessionId ? { ...s, memories: [...s.memories, url] } : s
+      )
+    );
+  }
+
   return (
     <div className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col bg-black">
       <div className="flex-1 overflow-hidden">
@@ -125,14 +173,29 @@ export function HorseDashboard({
             onBack={goHome}
           />
         )}
-        {activeNav === "workout-tracker" && (
-          <WorkoutTrackerScreen horse={horse} workout={workoutDetail} onBack={goHome} />
+        {activeNav === "gps-tracking" && (
+          <GpsTrackingScreen author={horse.owner} onCancel={goHome} onStop={handleStopGps} />
+        )}
+        {activeNav === "workout-history" && (
+          <WorkoutHistoryScreen
+            sessions={sessions}
+            onBack={goHome}
+            onOpenSession={handleOpenWorkout}
+          />
+        )}
+        {activeNav === "workout-tracker" && viewingSession && (
+          <WorkoutTrackerScreen
+            horse={horse}
+            session={viewingSession}
+            onBack={goHome}
+            onAddMemory={handleAddMemory}
+          />
         )}
         {activeNav === "home" && (
           <div className="no-scrollbar h-full overflow-y-auto">
             <div className="relative px-4 pb-4 pt-6">
               <div className="absolute left-4 top-6 z-10">
-                <QuickAddButton onSelectWorkout={() => setActiveNav("workout-tracker")} />
+                <QuickAddButton onSelectWorkout={() => setActiveNav("gps-tracking")} />
               </div>
               <HorseHeader
                 horse={horse}
@@ -147,7 +210,13 @@ export function HorseDashboard({
             </div>
 
             <div className="px-4 pb-6 pt-5">
-              {activeTab === "feed" && <FeedTab items={feedItems} />}
+              {activeTab === "feed" && (
+                <FeedTab
+                  items={feedItems}
+                  onOpenWorkout={handleOpenWorkout}
+                  onOpenHistory={() => setActiveNav("workout-history")}
+                />
+              )}
               {activeTab === "log" && (
                 <LogTab tasks={tasks} onComplete={handleComplete} />
               )}

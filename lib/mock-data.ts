@@ -7,7 +7,7 @@ import {
   HorseDocument,
   LogTask,
   Pedigree,
-  WorkoutDetail,
+  WorkoutSession,
 } from "./types";
 
 export const mockHorse: Horse = {
@@ -38,16 +38,35 @@ export const mockDocuments: HorseDocument[] = [
   { id: "d2", name: "Certificat de vaccination", kind: "pdf", addedAt: "12/06/2025" },
 ];
 
-export const mockWorkoutDetail: WorkoutDetail = {
-  title: "Travail sur le plat & Cadence",
-  duration: "52 min",
-  distance: "6.8 km",
-  gaits: { pas: 22, trot: 18, galop: 12 },
-  memories: [
-    "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=800&auto=format&fit=crop",
-  ],
-};
+export const mockWorkoutHistory: WorkoutSession[] = [
+  {
+    id: "w1",
+    title: "Travail sur le plat & Cadence",
+    date: "Aujourd'hui",
+    time: "14:20",
+    author: "Camille D.",
+    duration: "52 min",
+    distance: "6.8 km",
+    gaits: { pas: 22, trot: 18, galop: 12 },
+    memories: [
+      "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=800&auto=format&fit=crop",
+    ],
+  },
+  {
+    id: "w0",
+    title: "Balade en forêt",
+    date: "28 juin",
+    time: "10:05",
+    author: "Camille D.",
+    duration: "38 min",
+    distance: "4.2 km",
+    gaits: { pas: 30, trot: 8, galop: 0 },
+    memories: [
+      "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=800&auto=format&fit=crop",
+    ],
+  },
+];
 
 export const mockFeed: FeedItem[] = [
   {
@@ -69,6 +88,7 @@ export const mockFeed: FeedItem[] = [
     stats: { duration: "52 min", distance: "6.1 km", topSpeed: "28 km/h" },
     mapPlaceholder: true,
     viewed: false,
+    workoutId: "w1",
   },
   {
     id: "f2",

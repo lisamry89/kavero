@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Image from "next/image";
 import { MapPin, Plus } from "lucide-react";
-import { Horse, WorkoutDetail } from "@/lib/types";
+import { Horse, WorkoutSession } from "@/lib/types";
 import { ScreenHeader } from "./ScreenHeader";
 
 const GAIT_COLOR = {
@@ -64,21 +64,22 @@ function GaitRouteMap({ distance, duration }: { distance: string; duration: stri
 
 export function WorkoutTrackerScreen({
   horse,
-  workout,
+  session,
   onBack,
+  onAddMemory,
 }: {
   horse: Horse;
-  workout: WorkoutDetail;
+  session: WorkoutSession;
   onBack: () => void;
+  onAddMemory: (url: string) => void;
 }) {
-  const [memories, setMemories] = useState(workout.memories);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const totalGaitMinutes = workout.gaits.pas + workout.gaits.trot + workout.gaits.galop;
+  const totalGaitMinutes = session.gaits.pas + session.gaits.trot + session.gaits.galop;
 
   function handleAddMemory(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      setMemories((prev) => [...prev, URL.createObjectURL(file)]);
+      onAddMemory(URL.createObjectURL(file));
     }
     e.target.value = "";
   }
@@ -94,12 +95,15 @@ export function WorkoutTrackerScreen({
         <p className="mt-2 text-sm text-neutral-400">
           {horse.name} · {horse.breed} · {horse.age} ans
         </p>
-        <h1 className="font-serif text-xl text-white">Suivi GPS &amp; Performance</h1>
+        <span className="mt-1 text-[10px] uppercase tracking-widest2 text-neutral-600">
+          {session.date} · {session.time}
+        </span>
+        <h1 className="font-serif text-xl text-white">{session.title}</h1>
       </div>
 
       <div className="flex flex-col gap-8 px-4 pb-10">
         <div className="flex flex-col gap-3">
-          <GaitRouteMap distance={workout.distance} duration={workout.duration} />
+          <GaitRouteMap distance={session.distance} duration={session.duration} />
           <div className="flex items-center justify-center gap-4">
             {(Object.keys(GAIT_LABEL) as (keyof typeof GAIT_LABEL)[]).map((key) => (
               <span key={key} className="flex items-center gap-1.5 text-xs text-neutral-400">
@@ -115,11 +119,11 @@ export function WorkoutTrackerScreen({
           <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-neutral-800">
             <div className="border-r border-neutral-800 px-4 py-3 text-center">
               <p className="text-xs uppercase tracking-widest2 text-neutral-500">Durée</p>
-              <p className="mt-1 text-sm text-white">{workout.duration}</p>
+              <p className="mt-1 text-sm text-white">{session.duration}</p>
             </div>
             <div className="px-4 py-3 text-center">
               <p className="text-xs uppercase tracking-widest2 text-neutral-500">Distance</p>
-              <p className="mt-1 text-sm text-white">{workout.distance}</p>
+              <p className="mt-1 text-sm text-white">{session.distance}</p>
             </div>
           </div>
         </div>
@@ -131,13 +135,13 @@ export function WorkoutTrackerScreen({
               <div key={key} className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-white">{GAIT_LABEL[key]}</span>
-                  <span className="text-neutral-500">{workout.gaits[key]} min</span>
+                  <span className="text-neutral-500">{session.gaits[key]} min</span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-900">
                   <div
                     className="h-full rounded-full"
                     style={{
-                      width: `${(workout.gaits[key] / totalGaitMinutes) * 100}%`,
+                      width: `${(session.gaits[key] / totalGaitMinutes) * 100}%`,
                       backgroundColor: GAIT_COLOR[key],
                     }}
                   />
@@ -150,7 +154,7 @@ export function WorkoutTrackerScreen({
         <div className="flex flex-col gap-3">
           <h2 className="font-serif text-base text-white">Souvenirs de balade</h2>
           <div className="no-scrollbar flex gap-3 overflow-x-auto">
-            {memories.map((url, i) => (
+            {session.memories.map((url, i) => (
               <div
                 key={i}
                 className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-neutral-800"

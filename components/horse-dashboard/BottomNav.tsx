@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { Bell, Calendar, Home, MessageCircle, Sparkles, type LucideIcon } from "lucide-react";
 
-export type NavId = "home" | "profile" | "calendar" | "chat" | "bell" | "workout-tracker";
+export type NavId =
+  | "home"
+  | "profile"
+  | "calendar"
+  | "chat"
+  | "bell"
+  | "workout-tracker"
+  | "gps-tracking"
+  | "workout-history";
 
 interface NavItem {
   id: NavId;

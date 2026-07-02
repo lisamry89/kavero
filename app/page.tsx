@@ -8,7 +8,7 @@ import {
   mockLogTasks,
   mockNotifications,
   mockPedigree,
-  mockWorkoutDetail,
+  mockWorkoutHistory,
 } from "@/lib/mock-data";
 
 export default function HomePage() {
@@ -22,7 +22,7 @@ export default function HomePage() {
       documents={mockDocuments}
       conversations={mockConversations}
       notifications={mockNotifications}
-      workoutDetail={mockWorkoutDetail}
+      workoutHistory={mockWorkoutHistory}
     />
   );
 }

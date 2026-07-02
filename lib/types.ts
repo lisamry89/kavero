@@ -57,6 +57,7 @@ export interface FeedItem {
   viewed?: boolean;
   stats?: WorkoutStats;
   mapPlaceholder?: boolean;
+  workoutId?: string;
 }
 
 export interface LogTask {
@@ -120,8 +121,12 @@ export interface GaitBreakdown {
   galop: number;
 }
 
-export interface WorkoutDetail {
+export interface WorkoutSession {
+  id: string;
   title: string;
+  date: string;
+  time: string;
+  author: string;
   duration: string;
   distance: string;
   gaits: GaitBreakdown;
