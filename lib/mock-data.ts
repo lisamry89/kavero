@@ -4,6 +4,7 @@ import {
   FeedItem,
   HealthEvent,
   Horse,
+  HorseDocument,
   LogTask,
   Pedigree,
 } from "./types";
@@ -31,6 +32,11 @@ export const mockPedigree: Pedigree = {
   sire: { name: "Diamant Noir", sire: "Baloubet du Rouet", dam: "Ondine des Bois" },
   dam: { name: "Belle Étoile", sire: "Quartz de Plaine", dam: "Volcane du Parc" },
 };
+
+export const mockDocuments: HorseDocument[] = [
+  { id: "d1", name: "Passeport équin", kind: "pdf", addedAt: "03/01/2024" },
+  { id: "d2", name: "Certificat de vaccination", kind: "pdf", addedAt: "12/06/2025" },
+];
 
 export const mockFeed: FeedItem[] = [
   {

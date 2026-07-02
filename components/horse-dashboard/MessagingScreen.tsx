@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, FileText, Loader2, Paperclip, Send } from "lucide-react";
 import { ChatMessage, Conversation } from "@/lib/types";
 
@@ -107,31 +107,43 @@ export function MessagingScreen({
   const [conversations, setConversations] = useState(initialConversations);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const active = conversations.find((c) => c.id === activeId);
 
-  function handleSend() {
-    const text = draft.trim();
-    if (!text || !active) return;
+  function appendMessage(message: ChatMessage) {
+    if (!active) return;
     setConversations((prev) =>
       prev.map((c) =>
-        c.id === active.id
-          ? {
-              ...c,
-              messages: [
-                ...c.messages,
-                { id: `m-${Date.now()}`, sender: "owner", kind: "text", content: text },
-              ],
-            }
-          : c
+        c.id === active.id ? { ...c, messages: [...c.messages, message] } : c
       )
     );
+  }
+
+  function handleSend() {
+    const text = draft.trim();
+    if (!text) return;
+    appendMessage({ id: `m-${Date.now()}`, sender: "owner", kind: "text", content: text });
     setDraft("");
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      appendMessage({
+        id: `m-${Date.now()}`,
+        sender: "owner",
+        kind: "file",
+        content: "Document partagé",
+        fileName: file.name,
+      });
+    }
+    e.target.value = "";
   }
 
   if (!active) {
     return (
-      <div className="flex h-[calc(100vh-4.5rem)] flex-col overflow-y-auto">
+      <div className="h-full overflow-y-auto">
         <div className="px-4 py-4">
           <h2 className="font-serif text-lg text-white">Messages</h2>
         </div>
@@ -149,8 +161,16 @@ export function MessagingScreen({
   }
 
   return (
-    <div className="flex h-[calc(100vh-4.5rem)] flex-col">
-      <div className="flex items-center gap-3 border-b border-neutral-900 px-4 py-4">
+    <div className="flex h-full flex-col">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,.pdf"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      <div className="flex shrink-0 items-center gap-3 border-b border-neutral-900 px-4 py-4">
         <button
           onClick={() => setActiveId(null)}
           aria-label="Retour aux messages"
@@ -173,8 +193,8 @@ export function MessagingScreen({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-t border-neutral-900 px-4 py-3">
-        <div className="flex flex-1 items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2.5">
+      <div className="flex shrink-0 items-center gap-2 border-t border-neutral-900 px-4 py-4">
+        <div className="flex flex-1 items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900 px-4 py-3">
           <input
             type="text"
             value={draft}
@@ -183,7 +203,9 @@ export function MessagingScreen({
             placeholder="Écrire un message..."
             className="flex-1 bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
           />
-          <Paperclip className="h-4 w-4 shrink-0 text-neutral-600" strokeWidth={1.5} />
+          <button onClick={() => fileInputRef.current?.click()} aria-label="Joindre un fichier">
+            <Paperclip className="h-4 w-4 shrink-0 text-neutral-600" strokeWidth={1.5} />
+          </button>
         </div>
         <button
           onClick={handleSend}

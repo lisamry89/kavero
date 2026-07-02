@@ -1,5 +1,9 @@
+"use client";
+
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { Horse, HorseGender, Pedigree } from "@/lib/types";
+import { FileImage, FileText, Plus } from "lucide-react";
+import { DocumentKind, Horse, HorseDocument, HorseGender, Pedigree } from "@/lib/types";
 import { ScreenHeader } from "./ScreenHeader";
 
 const GENDER_LABEL: Record<HorseGender, string> = {
@@ -36,12 +40,34 @@ function PedigreeNode({ label, muted = false }: { label: string; muted?: boolean
 export function HorseProfileScreen({
   horse,
   pedigree,
+  documents: initialDocuments,
   onBack,
 }: {
   horse: Horse;
   pedigree: Pedigree;
+  documents: HorseDocument[];
   onBack: () => void;
 }) {
+  const [documents, setDocuments] = useState(initialDocuments);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      const kind: DocumentKind = file.type.startsWith("image/") ? "image" : "pdf";
+      setDocuments((prev) => [
+        {
+          id: `d-${Date.now()}`,
+          name: file.name.replace(/\.[^/.]+$/, ""),
+          kind,
+          addedAt: new Date().toLocaleDateString("fr-FR"),
+        },
+        ...prev,
+      ]);
+    }
+    e.target.value = "";
+  }
+
   const infoRows = [
     { label: "Date de naissance", value: horse.dob },
     { label: "Race", value: horse.breed },
@@ -53,7 +79,7 @@ export function HorseProfileScreen({
   ];
 
   return (
-    <div className="flex h-[calc(100vh-4.5rem)] flex-col overflow-y-auto">
+    <div className="h-full overflow-y-auto">
       <ScreenHeader onBack={onBack} />
 
       <div className="flex flex-col items-center gap-1 px-4 pb-6 pt-6 text-center">
@@ -100,6 +126,52 @@ export function HorseProfileScreen({
               <PedigreeNode label={pedigree.dam.dam ?? "—"} muted />
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif text-base text-white">Documents</h2>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Ajouter un document"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-800 active:scale-90"
+            >
+              <Plus className="h-4 w-4 text-white" strokeWidth={1.5} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {documents.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-neutral-800 px-4 py-6 text-center text-xs text-neutral-600">
+              Aucun document — ajoute le passeport de {horse.name} ou d&apos;autres fichiers utiles.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {documents.map((doc) => {
+                const Icon = doc.kind === "image" ? FileImage : FileText;
+                return (
+                  <div
+                    key={doc.id}
+                    className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-800">
+                      <Icon className="h-4 w-4 text-white" strokeWidth={1.5} />
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-sm text-white">{doc.name}</span>
+                      <span className="text-xs text-neutral-500">Ajouté le {doc.addedAt}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

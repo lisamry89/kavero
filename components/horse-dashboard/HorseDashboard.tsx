@@ -7,6 +7,7 @@ import {
   FeedItem,
   HealthEvent,
   Horse,
+  HorseDocument,
   LogTask,
   Pedigree,
 } from "@/lib/types";
@@ -35,6 +36,7 @@ export function HorseDashboard({
   logTasks,
   healthEvents,
   pedigree,
+  documents,
   conversations,
   notifications,
 }: {
@@ -43,6 +45,7 @@ export function HorseDashboard({
   logTasks: LogTask[];
   healthEvents: HealthEvent[];
   pedigree: Pedigree;
+  documents: HorseDocument[];
   conversations: Conversation[];
   notifications: AppNotification[];
 }) {
@@ -85,36 +88,43 @@ export function HorseDashboard({
   }
 
   return (
-    <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-black">
-      {activeNav === "chat" && <MessagingScreen conversations={conversations} />}
-      {activeNav === "bell" && <NotificationsScreen notifications={notifications} />}
-      {activeNav === "calendar" && (
-        <CalendarScreen
-          events={events}
-          onAdd={(event) => setEvents((prev) => [...prev, event])}
-        />
-      )}
-      {activeNav === "profile" && (
-        <HorseProfileScreen horse={horse} pedigree={pedigree} onBack={goHome} />
-      )}
-      {activeNav === "home" && (
-        <>
-          <div className="px-4 pb-4 pt-6">
-            <HorseHeader horse={horse} onOpenProfile={() => setActiveNav("profile")} />
-          </div>
+    <div className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col bg-black">
+      <div className="flex-1 overflow-hidden">
+        {activeNav === "chat" && <MessagingScreen conversations={conversations} />}
+        {activeNav === "bell" && <NotificationsScreen notifications={notifications} />}
+        {activeNav === "calendar" && (
+          <CalendarScreen
+            events={events}
+            onAdd={(event) => setEvents((prev) => [...prev, event])}
+          />
+        )}
+        {activeNav === "profile" && (
+          <HorseProfileScreen
+            horse={horse}
+            pedigree={pedigree}
+            documents={documents}
+            onBack={goHome}
+          />
+        )}
+        {activeNav === "home" && (
+          <div className="h-full overflow-y-auto">
+            <div className="px-4 pb-4 pt-6">
+              <HorseHeader horse={horse} onOpenProfile={() => setActiveNav("profile")} />
+            </div>
 
-          <div className="px-4">
-            <Tabs tabs={TABS} activeId={activeTab} onChange={setActiveTab} />
-          </div>
+            <div className="px-4">
+              <Tabs tabs={TABS} activeId={activeTab} onChange={setActiveTab} />
+            </div>
 
-          <div className="flex-1 px-4 pb-28 pt-5">
-            {activeTab === "feed" && <FeedTab items={feedItems} />}
-            {activeTab === "log" && (
-              <LogTab tasks={tasks} onComplete={handleComplete} />
-            )}
+            <div className="px-4 pb-6 pt-5">
+              {activeTab === "feed" && <FeedTab items={feedItems} />}
+              {activeTab === "log" && (
+                <LogTab tasks={tasks} onComplete={handleComplete} />
+              )}
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
 
       <BottomNav activeId={activeNav} onChange={setActiveNav} />
     </div>

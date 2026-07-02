@@ -34,7 +34,7 @@ const TYPE_LABEL: Record<HealthEventType, string> = {
 function buildDateStrip() {
   const days = [];
   const today = new Date();
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 30; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     days.push({
@@ -46,6 +46,10 @@ function buildDateStrip() {
   return days;
 }
 
+function eventMatchesDay(event: HealthEvent, day: { day: string; month: string }) {
+  return event.date.replace(".", "") === `${day.day} ${day.month}`;
+}
+
 export function CalendarScreen({
   events,
   onAdd,
@@ -54,7 +58,7 @@ export function CalendarScreen({
   onAdd: (event: HealthEvent) => void;
 }) {
   const [dateStrip] = useState(buildDateStrip);
-  const [selected, setSelected] = useState(dateStrip[0].iso);
+  const [selected, setSelected] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [type, setType] = useState<HealthEventType>("vet");
   const [title, setTitle] = useState("");
@@ -80,8 +84,13 @@ export function CalendarScreen({
     setShowForm(false);
   }
 
+  const selectedDay = dateStrip.find((d) => d.iso === selected);
+  const visibleEvents = selectedDay
+    ? events.filter((e) => eventMatchesDay(e, selectedDay))
+    : events;
+
   return (
-    <div className="flex h-[calc(100vh-4.5rem)] flex-col overflow-y-auto px-4 py-4">
+    <div className="h-full overflow-y-auto px-4 py-4">
       <div className="flex items-center justify-between pb-4">
         <h2 className="font-serif text-lg text-white">Santé &amp; Calendrier</h2>
         <button
@@ -139,14 +148,28 @@ export function CalendarScreen({
         </div>
       )}
 
-      <div className="flex justify-between border-b border-neutral-900 pb-4">
+      <div className="flex items-center justify-between pb-2">
+        <span className="text-[10px] uppercase tracking-widest2 text-neutral-600">
+          {selectedDay ? `${selectedDay.day} ${selectedDay.month}` : "Tous les rendez-vous"}
+        </span>
+        {selectedDay && (
+          <button
+            onClick={() => setSelected(null)}
+            className="text-[10px] uppercase tracking-widest2 text-neutral-400 underline"
+          >
+            Tout afficher
+          </button>
+        )}
+      </div>
+
+      <div className="flex gap-5 overflow-x-auto border-b border-neutral-900 pb-4">
         {dateStrip.map((d) => {
           const isActive = d.iso === selected;
           return (
             <button
               key={d.iso}
-              onClick={() => setSelected(d.iso)}
-              className="flex flex-col items-center gap-1.5"
+              onClick={() => setSelected(isActive ? null : d.iso)}
+              className="flex shrink-0 flex-col items-center gap-1.5"
             >
               <span
                 className={`text-sm ${isActive ? "font-medium text-white" : "text-neutral-500"}`}
@@ -164,15 +187,15 @@ export function CalendarScreen({
         })}
       </div>
 
-      {events.length === 0 ? (
+      {visibleEvents.length === 0 ? (
         <p className="py-10 text-center text-xs uppercase tracking-widest2 text-neutral-600">
-          Aucun rendez-vous à venir
+          {selectedDay ? "Aucun rendez-vous ce jour" : "Aucun rendez-vous à venir"}
         </p>
       ) : (
         <div className="flex flex-col pt-6">
-          {events.map((event, i) => {
+          {visibleEvents.map((event, i) => {
             const Icon = TYPE_ICON[event.type];
-            const isLast = i === events.length - 1;
+            const isLast = i === visibleEvents.length - 1;
             return (
               <div key={event.id} className="flex gap-4">
                 <div className="flex flex-col items-center">

@@ -30,6 +30,15 @@ export interface Pedigree {
   dam: PedigreeEntry;
 }
 
+export type DocumentKind = "pdf" | "image";
+
+export interface HorseDocument {
+  id: string;
+  name: string;
+  kind: DocumentKind;
+  addedAt: string;
+}
+
 export type FeedKind = "photo" | "video" | "flash";
 
 export interface FeedItem {

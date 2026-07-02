@@ -32,8 +32,11 @@ export function BottomNav({
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-md border-t border-neutral-900 bg-black/90 backdrop-blur">
-      <div className="grid grid-cols-5 items-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3">
+    <nav
+      className="shrink-0 border-t border-neutral-900 bg-black/90 backdrop-blur"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="grid grid-cols-5 items-center px-4 pb-3 pt-3">
         {NAV_ITEMS.map((item) => {
           const isActive = item.id === activeId;
           const Icon = item.icon;
@@ -61,7 +64,7 @@ export function BottomNav({
           </button>
         </div>
       </div>
-      <div className="pb-[calc(env(safe-area-inset-bottom)+0.5rem)] text-center">
+      <div className="pb-2 text-center">
         <span className="text-[10px] uppercase tracking-widest2 text-neutral-700">
           Kavero
         </span>
