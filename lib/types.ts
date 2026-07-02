@@ -1,4 +1,5 @@
 export type HorseStatus = "great" | "good" | "attention";
+export type HorseGender = "jument" | "hongre" | "etalon";
 
 export interface Horse {
   id: string;
@@ -10,6 +11,23 @@ export interface Horse {
   statusLabel: string;
   stable: string;
   owner: string;
+  dob: string;
+  gender: HorseGender;
+  coatColor: string;
+  height: string;
+  microchip: string;
+  sireNumber: string;
+}
+
+export interface PedigreeEntry {
+  name: string;
+  sire?: string;
+  dam?: string;
+}
+
+export interface Pedigree {
+  sire: PedigreeEntry;
+  dam: PedigreeEntry;
 }
 
 export type FeedKind = "photo" | "video" | "flash";
@@ -43,7 +61,7 @@ export interface HealthEvent {
   time: string;
 }
 
-export type MessageSender = "manager" | "owner";
+export type MessageSender = "contact" | "owner";
 export type MessageKind = "text" | "file";
 
 export interface ChatMessage {
@@ -52,4 +70,22 @@ export interface ChatMessage {
   kind: MessageKind;
   content: string;
   fileName?: string;
+}
+
+export interface Conversation {
+  id: string;
+  name: string;
+  role: string;
+  online: boolean;
+  messages: ChatMessage[];
+}
+
+export type NotificationKind = "reminder" | "care" | "message";
+
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  subtitle: string;
+  time: string;
 }

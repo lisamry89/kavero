@@ -1,10 +1,12 @@
 import { HorseDashboard } from "@/components/horse-dashboard/HorseDashboard";
 import {
+  mockConversations,
   mockFeed,
   mockHealthEvents,
   mockHorse,
   mockLogTasks,
-  mockMessages,
+  mockNotifications,
+  mockPedigree,
 } from "@/lib/mock-data";
 
 export default function HomePage() {
@@ -14,7 +16,9 @@ export default function HomePage() {
       feed={mockFeed}
       logTasks={mockLogTasks}
       healthEvents={mockHealthEvents}
-      messages={mockMessages}
+      pedigree={mockPedigree}
+      conversations={mockConversations}
+      notifications={mockNotifications}
     />
   );
 }

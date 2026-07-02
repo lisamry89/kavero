@@ -1,4 +1,12 @@
-import { ChatMessage, FeedItem, HealthEvent, Horse, LogTask } from "./types";
+import {
+  AppNotification,
+  Conversation,
+  FeedItem,
+  HealthEvent,
+  Horse,
+  LogTask,
+  Pedigree,
+} from "./types";
 
 export const mockHorse: Horse = {
   id: "eclipse-01",
@@ -11,6 +19,17 @@ export const mockHorse: Horse = {
   statusLabel: "En pleine forme",
   stable: "Écurie des Tilleuls",
   owner: "Camille D.",
+  dob: "12/04/2019",
+  gender: "jument",
+  coatColor: "Bai",
+  height: "1,68 m",
+  microchip: "250259800123456",
+  sireNumber: "FR9202719",
+};
+
+export const mockPedigree: Pedigree = {
+  sire: { name: "Diamant Noir", sire: "Baloubet du Rouet", dam: "Ondine des Bois" },
+  dam: { name: "Belle Étoile", sire: "Quartz de Plaine", dam: "Volcane du Parc" },
 };
 
 export const mockFeed: FeedItem[] = [
@@ -87,25 +106,92 @@ export const mockHealthEvents: HealthEvent[] = [
   },
 ];
 
-export const mockMessages: ChatMessage[] = [
+export const mockConversations: Conversation[] = [
   {
-    id: "m1",
-    sender: "manager",
-    kind: "text",
-    content:
-      "Bonjour, la visite du maréchal-ferrant s'est bien passée. Voici le nouveau rapport vétérinaire à consulter.",
+    id: "c1",
+    name: "Écurie des Tilleuls",
+    role: "Gestionnaire",
+    online: true,
+    messages: [
+      {
+        id: "m1",
+        sender: "contact",
+        kind: "text",
+        content:
+          "Bonjour, la visite du maréchal-ferrant s'est bien passée. Voici le nouveau rapport vétérinaire à consulter.",
+      },
+      {
+        id: "m2",
+        sender: "owner",
+        kind: "text",
+        content: "Merci, je regarde ça tout de suite. Comment va-t-elle sinon ?",
+      },
+      {
+        id: "m3",
+        sender: "contact",
+        kind: "file",
+        content: "Rapport vétérinaire",
+        fileName: "rapport_veterinaire.pdf",
+      },
+    ],
   },
   {
-    id: "m2",
-    sender: "owner",
-    kind: "text",
-    content: "Merci, je regarde ça tout de suite. Comment va-t-elle sinon ?",
+    id: "c2",
+    name: "Dr. Meyer",
+    role: "Vétérinaire",
+    online: false,
+    messages: [
+      {
+        id: "m4",
+        sender: "contact",
+        kind: "text",
+        content: "Le vaccin est bien noté pour le 12 juillet à 10h.",
+      },
+    ],
   },
   {
-    id: "m3",
-    sender: "manager",
-    kind: "file",
-    content: "Rapport vétérinaire",
-    fileName: "rapport_veterinaire.pdf",
+    id: "c3",
+    name: "Thomas Lefèvre",
+    role: "Maréchal-ferrant",
+    online: false,
+    messages: [
+      {
+        id: "m5",
+        sender: "contact",
+        kind: "text",
+        content: "Prochaine ferrure prévue le 18 juillet, je confirme l'heure la veille.",
+      },
+    ],
+  },
+];
+
+export const mockNotifications: AppNotification[] = [
+  {
+    id: "n1",
+    kind: "reminder",
+    title: "Rendez-vous vétérinaire dans 3 jours",
+    subtitle: "Visite de contrôle et vaccination · 12 juil., 10:00",
+    time: "Aujourd'hui",
+  },
+  {
+    id: "n2",
+    kind: "care",
+    title: "Pansage complet effectué",
+    subtitle: "Par Julien",
+    time: "14:10",
+  },
+  {
+    id: "n3",
+    kind: "care",
+    title: "Sortie au paddock effectuée",
+    subtitle: "Par Julien",
+    time: "16:45",
+  },
+  {
+    id: "n4",
+    kind: "message",
+    title: "Nouveau message de l'écurie",
+    subtitle: "Rapport vétérinaire partagé",
+    time: "Hier",
   },
 ];

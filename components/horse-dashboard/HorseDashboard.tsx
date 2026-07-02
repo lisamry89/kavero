@@ -1,21 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { ChatMessage, FeedItem, HealthEvent, Horse, LogTask } from "@/lib/types";
+import {
+  AppNotification,
+  Conversation,
+  FeedItem,
+  HealthEvent,
+  Horse,
+  LogTask,
+  Pedigree,
+} from "@/lib/types";
 import { HorseHeader } from "./HorseHeader";
 import { Tabs } from "./Tabs";
 import { FeedTab } from "./FeedTab";
 import { LogTab } from "./LogTab";
-import { CalendarTab } from "./CalendarTab";
-import { BottomNav, NavId } from "./BottomNav";
+import { CalendarScreen } from "./CalendarScreen";
+import { HorseProfileScreen } from "./HorseProfileScreen";
 import { MessagingScreen } from "./MessagingScreen";
+import { NotificationsScreen } from "./NotificationsScreen";
+import { BottomNav, NavId } from "./BottomNav";
 
 const STAFF_NAME = "Julien";
 
 const TABS = [
   { id: "feed", label: "Fil d'actualité" },
   { id: "log", label: "Suivi quotidien" },
-  { id: "health", label: "Santé" },
 ];
 
 function nowLabel() {
@@ -30,23 +39,26 @@ export function HorseDashboard({
   feed,
   logTasks,
   healthEvents,
-  messages,
+  pedigree,
+  conversations,
+  notifications,
 }: {
   horse: Horse;
   feed: FeedItem[];
   logTasks: LogTask[];
   healthEvents: HealthEvent[];
-  messages: ChatMessage[];
+  pedigree: Pedigree;
+  conversations: Conversation[];
+  notifications: AppNotification[];
 }) {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [activeNav, setActiveNav] = useState<NavId>("home");
   const [feedItems, setFeedItems] = useState(feed);
   const [tasks, setTasks] = useState(logTasks);
+  const [events, setEvents] = useState(healthEvents);
 
-  function handleNavChange(id: NavId) {
-    setActiveNav(id);
-    if (id === "calendar") setActiveTab("health");
-    if (id === "home") setActiveTab("feed");
+  function goHome() {
+    setActiveNav("home");
   }
 
   function handleComplete(taskId: string, mediaUrl?: string) {
@@ -75,12 +87,21 @@ export function HorseDashboard({
 
   return (
     <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-black">
-      {activeNav === "chat" ? (
-        <MessagingScreen horse={horse} messages={messages} />
-      ) : (
+      {activeNav === "chat" && <MessagingScreen conversations={conversations} />}
+      {activeNav === "bell" && <NotificationsScreen notifications={notifications} />}
+      {activeNav === "calendar" && (
+        <CalendarScreen
+          events={events}
+          onAdd={(event) => setEvents((prev) => [...prev, event])}
+        />
+      )}
+      {activeNav === "profile" && (
+        <HorseProfileScreen horse={horse} pedigree={pedigree} onBack={goHome} />
+      )}
+      {activeNav === "home" && (
         <>
           <div className="px-4 pb-4 pt-6">
-            <HorseHeader horse={horse} />
+            <HorseHeader horse={horse} onOpenProfile={() => setActiveNav("profile")} />
           </div>
 
           <div className="px-4">
@@ -92,12 +113,11 @@ export function HorseDashboard({
             {activeTab === "log" && (
               <LogTab tasks={tasks} onComplete={handleComplete} />
             )}
-            {activeTab === "health" && <CalendarTab events={healthEvents} />}
           </div>
         </>
       )}
 
-      <BottomNav activeId={activeNav} onChange={handleNavChange} />
+      <BottomNav activeId={activeNav} onChange={setActiveNav} />
     </div>
   );
 }

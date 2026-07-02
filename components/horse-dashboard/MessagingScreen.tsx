@@ -1,9 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { FileText, Paperclip, Send } from "lucide-react";
-import { ChatMessage, Horse } from "@/lib/types";
+import { ChevronLeft, FileText, Paperclip, Send } from "lucide-react";
+import { ChatMessage, Conversation } from "@/lib/types";
+
+function Avatar({ name, online }: { name: string; online: boolean }) {
+  return (
+    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-sm font-medium text-white">
+      {name.charAt(0)}
+      {online && (
+        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-black bg-emerald-400" />
+      )}
+    </div>
+  );
+}
 
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isOwner = message.sender === "owner";
@@ -11,7 +21,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex flex-col gap-1.5 ${isOwner ? "items-end" : "items-start"}`}>
       <span className="text-[11px] uppercase tracking-widest2 text-neutral-600">
-        {isOwner ? "Vous" : "Gestionnaire"}
+        {isOwner ? "Vous" : "Eux"}
       </span>
       {message.kind === "file" ? (
         <div className="flex max-w-[85%] items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3">
@@ -38,47 +48,103 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-export function MessagingScreen({
-  horse,
-  messages: initialMessages,
+function ConversationListItem({
+  conversation,
+  onOpen,
 }: {
-  horse: Horse;
-  messages: ChatMessage[];
+  conversation: Conversation;
+  onOpen: () => void;
 }) {
-  const [messages, setMessages] = useState(initialMessages);
+  const lastMessage = conversation.messages[conversation.messages.length - 1];
+
+  return (
+    <button
+      onClick={onOpen}
+      className="flex items-center gap-3 border-b border-neutral-900 py-4 text-left"
+    >
+      <Avatar name={conversation.name} online={conversation.online} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-sm font-medium text-white">{conversation.name}</span>
+        <span className="text-xs text-neutral-500">{conversation.role}</span>
+        {lastMessage && (
+          <p className="mt-1 truncate text-xs text-neutral-600">
+            {lastMessage.kind === "file" ? lastMessage.fileName : lastMessage.content}
+          </p>
+        )}
+      </div>
+    </button>
+  );
+}
+
+export function MessagingScreen({
+  conversations: initialConversations,
+}: {
+  conversations: Conversation[];
+}) {
+  const [conversations, setConversations] = useState(initialConversations);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+
+  const active = conversations.find((c) => c.id === activeId);
 
   function handleSend() {
     const text = draft.trim();
-    if (!text) return;
-    setMessages((prev) => [
-      ...prev,
-      { id: `m-${Date.now()}`, sender: "owner", kind: "text", content: text },
-    ]);
+    if (!text || !active) return;
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === active.id
+          ? {
+              ...c,
+              messages: [
+                ...c.messages,
+                { id: `m-${Date.now()}`, sender: "owner", kind: "text", content: text },
+              ],
+            }
+          : c
+      )
+    );
     setDraft("");
+  }
+
+  if (!active) {
+    return (
+      <div className="flex h-[calc(100vh-4.5rem)] flex-col overflow-y-auto">
+        <div className="px-4 py-4">
+          <h2 className="font-serif text-lg text-white">Messages</h2>
+        </div>
+        <div className="flex flex-col px-4">
+          {conversations.map((c) => (
+            <ConversationListItem
+              key={c.id}
+              conversation={c}
+              onOpen={() => setActiveId(c.id)}
+            />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="flex h-[calc(100vh-4.5rem)] flex-col">
       <div className="flex items-center gap-3 border-b border-neutral-900 px-4 py-4">
-        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl">
-          <Image src={horse.photoUrl} alt={horse.name} fill className="object-cover" />
-          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-black bg-emerald-400" />
-        </div>
+        <button
+          onClick={() => setActiveId(null)}
+          aria-label="Retour aux messages"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full active:scale-90"
+        >
+          <ChevronLeft className="h-5 w-5 text-white" strokeWidth={1.5} />
+        </button>
+        <Avatar name={active.name} online={active.online} />
         <div>
-          <h2 className="font-serif text-lg text-white">{horse.name}</h2>
-          <p className="text-xs text-neutral-500">
-            {horse.breed}, {horse.age} ans
-          </p>
+          <h2 className="text-sm font-medium text-white">{active.name}</h2>
+          <p className="text-xs text-neutral-500">{active.role}</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-5">
-        <h3 className="mb-5 font-serif text-base text-white">
-          Messagerie privée
-        </h3>
         <div className="flex flex-col gap-5">
-          {messages.map((m) => (
+          {active.messages.map((m) => (
             <MessageBubble key={m.id} message={m} />
           ))}
         </div>
