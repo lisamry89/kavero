@@ -10,6 +10,7 @@ import {
   HorseDocument,
   LogTask,
   Pedigree,
+  WorkoutDetail,
 } from "@/lib/types";
 import { HorseHeader } from "./HorseHeader";
 import { Tabs } from "./Tabs";
@@ -20,6 +21,8 @@ import { HorseProfileScreen } from "./HorseProfileScreen";
 import { MessagingScreen } from "./MessagingScreen";
 import { NotificationsScreen } from "./NotificationsScreen";
 import { StoryViewer } from "./StoryViewer";
+import { WorkoutTrackerScreen } from "./WorkoutTrackerScreen";
+import { QuickAddButton } from "./QuickAddButton";
 import { BottomNav, NavId } from "./BottomNav";
 
 const STAFF_NAME = "Julien";
@@ -40,6 +43,7 @@ export function HorseDashboard({
   documents,
   conversations,
   notifications,
+  workoutDetail,
 }: {
   horse: Horse;
   feed: FeedItem[];
@@ -49,6 +53,7 @@ export function HorseDashboard({
   documents: HorseDocument[];
   conversations: Conversation[];
   notifications: AppNotification[];
+  workoutDetail: WorkoutDetail;
 }) {
   const TABS = [
     { id: "feed", label: horse.name },
@@ -120,9 +125,15 @@ export function HorseDashboard({
             onBack={goHome}
           />
         )}
+        {activeNav === "workout-tracker" && (
+          <WorkoutTrackerScreen horse={horse} workout={workoutDetail} onBack={goHome} />
+        )}
         {activeNav === "home" && (
           <div className="no-scrollbar h-full overflow-y-auto">
-            <div className="px-4 pb-4 pt-6">
+            <div className="relative px-4 pb-4 pt-6">
+              <div className="absolute left-4 top-6 z-10">
+                <QuickAddButton onSelectWorkout={() => setActiveNav("workout-tracker")} />
+              </div>
               <HorseHeader
                 horse={horse}
                 hasUnseenStory={hasUnseenStory}

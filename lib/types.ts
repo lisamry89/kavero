@@ -113,3 +113,17 @@ export interface AppNotification {
   subtitle: string;
   time: string;
 }
+
+export interface GaitBreakdown {
+  pas: number;
+  trot: number;
+  galop: number;
+}
+
+export interface WorkoutDetail {
+  title: string;
+  duration: string;
+  distance: string;
+  gaits: GaitBreakdown;
+  memories: string[];
+}

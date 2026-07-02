@@ -7,6 +7,7 @@ import {
   HorseDocument,
   LogTask,
   Pedigree,
+  WorkoutDetail,
 } from "./types";
 
 export const mockHorse: Horse = {
@@ -36,6 +37,17 @@ export const mockDocuments: HorseDocument[] = [
   { id: "d1", name: "Passeport équin", kind: "pdf", addedAt: "03/01/2024" },
   { id: "d2", name: "Certificat de vaccination", kind: "pdf", addedAt: "12/06/2025" },
 ];
+
+export const mockWorkoutDetail: WorkoutDetail = {
+  title: "Travail sur le plat & Cadence",
+  duration: "52 min",
+  distance: "6.8 km",
+  gaits: { pas: 22, trot: 18, galop: 12 },
+  memories: [
+    "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=800&auto=format&fit=crop",
+  ],
+};
 
 export const mockFeed: FeedItem[] = [
   {
