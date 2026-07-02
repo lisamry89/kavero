@@ -90,7 +90,7 @@ export function CalendarScreen({
     : events;
 
   return (
-    <div className="h-full overflow-y-auto px-4 py-4">
+    <div className="no-scrollbar h-full overflow-y-auto px-4 py-4">
       <div className="flex items-center justify-between pb-4">
         <h2 className="font-serif text-lg text-white">Santé &amp; Calendrier</h2>
         <button
@@ -162,7 +162,7 @@ export function CalendarScreen({
         )}
       </div>
 
-      <div className="flex gap-5 overflow-x-auto border-b border-neutral-900 pb-4">
+      <div className="no-scrollbar flex gap-5 overflow-x-auto border-b border-neutral-900 pb-4">
         {dateStrip.map((d) => {
           const isActive = d.iso === selected;
           return (

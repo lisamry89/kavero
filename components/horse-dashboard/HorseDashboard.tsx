@@ -19,6 +19,7 @@ import { CalendarScreen } from "./CalendarScreen";
 import { HorseProfileScreen } from "./HorseProfileScreen";
 import { MessagingScreen } from "./MessagingScreen";
 import { NotificationsScreen } from "./NotificationsScreen";
+import { StoryViewer } from "./StoryViewer";
 import { BottomNav, NavId } from "./BottomNav";
 
 const STAFF_NAME = "Julien";
@@ -58,9 +59,22 @@ export function HorseDashboard({
   const [feedItems, setFeedItems] = useState(feed);
   const [tasks, setTasks] = useState(logTasks);
   const [events, setEvents] = useState(healthEvents);
+  const [storyOpen, setStoryOpen] = useState(false);
+
+  const hasUnseenStory = feedItems.some((item) => !item.viewed);
+  const latestFeedItem = feedItems[0];
 
   function goHome() {
     setActiveNav("home");
+  }
+
+  function handleOpenStory() {
+    setStoryOpen(true);
+  }
+
+  function handleCloseStory() {
+    setStoryOpen(false);
+    setFeedItems((prev) => prev.map((item) => ({ ...item, viewed: true })));
   }
 
   function handleComplete(taskId: string, mediaUrl?: string) {
@@ -107,9 +121,14 @@ export function HorseDashboard({
           />
         )}
         {activeNav === "home" && (
-          <div className="h-full overflow-y-auto">
+          <div className="no-scrollbar h-full overflow-y-auto">
             <div className="px-4 pb-4 pt-6">
-              <HorseHeader horse={horse} onOpenProfile={() => setActiveNav("profile")} />
+              <HorseHeader
+                horse={horse}
+                hasUnseenStory={hasUnseenStory}
+                onOpenProfile={() => setActiveNav("profile")}
+                onOpenStory={handleOpenStory}
+              />
             </div>
 
             <div className="px-4">
@@ -127,6 +146,10 @@ export function HorseDashboard({
       </div>
 
       <BottomNav activeId={activeNav} onChange={setActiveNav} />
+
+      {storyOpen && latestFeedItem && (
+        <StoryViewer item={latestFeedItem} onClose={handleCloseStory} />
+      )}
     </div>
   );
 }

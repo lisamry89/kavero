@@ -14,8 +14,7 @@ export const mockHorse: Horse = {
   name: "Éclipse",
   breed: "Selle Français",
   age: 7,
-  photoUrl:
-    "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=1200&auto=format&fit=crop",
+  photoUrl: "/horses/eclipse.jpg",
   status: "great",
   statusLabel: "En pleine forme",
   stable: "Écurie des Tilleuls",
@@ -47,6 +46,7 @@ export const mockFeed: FeedItem[] = [
     author: "Julien",
     mediaUrl:
       "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=1200&auto=format&fit=crop",
+    viewed: false,
   },
   {
     id: "f2",
@@ -54,6 +54,7 @@ export const mockFeed: FeedItem[] = [
     title: "Le maréchal-ferrant est passé ce matin",
     time: "09:10",
     author: "Écurie des Tilleuls",
+    viewed: false,
   },
 ];
 

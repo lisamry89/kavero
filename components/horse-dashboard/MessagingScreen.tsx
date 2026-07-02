@@ -143,7 +143,7 @@ export function MessagingScreen({
 
   if (!active) {
     return (
-      <div className="h-full overflow-y-auto">
+      <div className="no-scrollbar h-full overflow-y-auto">
         <div className="px-4 py-4">
           <h2 className="font-serif text-lg text-white">Messages</h2>
         </div>
@@ -185,7 +185,7 @@ export function MessagingScreen({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-5">
+      <div className="no-scrollbar flex-1 overflow-y-auto px-4 py-5">
         <div className="flex flex-col gap-5">
           {active.messages.map((m) => (
             <MessageBubble key={m.id} message={m} />

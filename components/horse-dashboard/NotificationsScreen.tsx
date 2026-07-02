@@ -13,7 +13,7 @@ export function NotificationsScreen({
   notifications: AppNotification[];
 }) {
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="no-scrollbar h-full overflow-y-auto">
       <div className="px-4 py-4">
         <h2 className="font-serif text-lg text-white">Notifications</h2>
       </div>

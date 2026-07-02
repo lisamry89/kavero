@@ -48,6 +48,7 @@ export interface FeedItem {
   time: string;
   author: string;
   mediaUrl?: string;
+  viewed?: boolean;
 }
 
 export interface LogTask {

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { FileImage, FileText, Plus } from "lucide-react";
+import { Camera, FileImage, FileText, Plus } from "lucide-react";
 import { DocumentKind, Horse, HorseDocument, HorseGender, Pedigree } from "@/lib/types";
 import { ScreenHeader } from "./ScreenHeader";
 
@@ -49,7 +49,9 @@ export function HorseProfileScreen({
   onBack: () => void;
 }) {
   const [documents, setDocuments] = useState(initialDocuments);
+  const [photoUrl, setPhotoUrl] = useState(horse.photoUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -68,6 +70,14 @@ export function HorseProfileScreen({
     e.target.value = "";
   }
 
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoUrl(URL.createObjectURL(file));
+    }
+    e.target.value = "";
+  }
+
   const infoRows = [
     { label: "Date de naissance", value: horse.dob },
     { label: "Race", value: horse.breed },
@@ -79,13 +89,27 @@ export function HorseProfileScreen({
   ];
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="no-scrollbar h-full overflow-y-auto">
       <ScreenHeader onBack={onBack} />
 
       <div className="flex flex-col items-center gap-1 px-4 pb-6 pt-6 text-center">
-        <div className="relative h-24 w-24 overflow-hidden rounded-full border border-neutral-800">
-          <Image src={horse.photoUrl} alt={horse.name} fill className="object-cover" />
-        </div>
+        <button
+          onClick={() => photoInputRef.current?.click()}
+          aria-label="Changer la photo"
+          className="relative h-24 w-24 overflow-hidden rounded-full border border-neutral-800 active:opacity-80"
+        >
+          <Image src={photoUrl} alt={horse.name} fill className="object-cover" />
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-black/50 py-1.5">
+            <Camera className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />
+          </div>
+        </button>
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handlePhotoChange}
+        />
         <h1 className="mt-3 font-serif text-3xl font-medium text-white">{horse.name}</h1>
         <p className="text-sm text-neutral-400">
           {GENDER_LABEL[horse.gender]} · {horse.breed} · {horse.age} ans
@@ -101,7 +125,7 @@ export function HorseProfileScreen({
 
         <div className="flex flex-col gap-3">
           <h2 className="font-serif text-base text-white">Généalogie</h2>
-          <div className="grid grid-cols-[minmax(90px,1fr)_minmax(110px,1fr)_minmax(120px,1fr)] gap-x-3 gap-y-2 overflow-x-auto pb-2">
+          <div className="no-scrollbar grid grid-cols-[minmax(90px,1fr)_minmax(110px,1fr)_minmax(120px,1fr)] gap-x-3 gap-y-2 overflow-x-auto pb-2">
             <div className="row-span-4 flex items-center">
               <PedigreeNode label={horse.name} />
             </div>
