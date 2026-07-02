@@ -1,4 +1,4 @@
-import { FeedItem, HealthEvent, Horse, LogTask } from "./types";
+import { ChatMessage, FeedItem, HealthEvent, Horse, LogTask } from "./types";
 
 export const mockHorse: Horse = {
   id: "eclipse-01",
@@ -84,5 +84,28 @@ export const mockHealthEvents: HealthEvent[] = [
     title: "Ferrure complète",
     date: "18 juil.",
     time: "14:00",
+  },
+];
+
+export const mockMessages: ChatMessage[] = [
+  {
+    id: "m1",
+    sender: "manager",
+    kind: "text",
+    content:
+      "Bonjour, la visite du maréchal-ferrant s'est bien passée. Voici le nouveau rapport vétérinaire à consulter.",
+  },
+  {
+    id: "m2",
+    sender: "owner",
+    kind: "text",
+    content: "Merci, je regarde ça tout de suite. Comment va-t-elle sinon ?",
+  },
+  {
+    id: "m3",
+    sender: "manager",
+    kind: "file",
+    content: "Rapport vétérinaire",
+    fileName: "rapport_veterinaire.pdf",
   },
 ];

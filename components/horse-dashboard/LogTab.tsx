@@ -1,8 +1,16 @@
 "use client";
 
 import { useRef } from "react";
-import { Check, Camera } from "lucide-react";
+import { Camera, Check, Fence, Shovel, Sparkles, Wheat, type LucideIcon } from "lucide-react";
 import { LogTask } from "@/lib/types";
+
+const TASK_ICON: Record<string, LucideIcon> = {
+  t1: Wheat,
+  t2: Shovel,
+  t3: Sparkles,
+  t4: Wheat,
+  t5: Fence,
+};
 
 export function LogTab({
   tasks,
@@ -35,7 +43,7 @@ export function LogTab({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-5">
       <input
         ref={fileInputRef}
         type="file"
@@ -45,44 +53,54 @@ export function LogTab({
         onChange={handleFileChange}
       />
 
-      {tasks.map((task) => (
-        <button
-          key={task.id}
-          onClick={() => handleTap(task)}
-          disabled={task.done}
-          className={`flex items-center gap-3 rounded-xl border border-neutral-800 p-4 text-left transition ${
-            task.done ? "bg-black" : "bg-neutral-900 active:scale-[0.98]"
-          }`}
-        >
-          <div
-            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-              task.done
-                ? "border-white bg-white"
-                : "border-neutral-600 bg-transparent"
-            }`}
-          >
-            {task.done && <Check className="h-3.5 w-3.5 text-black" strokeWidth={2.5} />}
-            {!task.done && task.requiresPhoto && (
-              <Camera className="h-3 w-3 text-neutral-500" strokeWidth={1.5} />
-            )}
-          </div>
+      <h2 className="text-center font-serif text-xl font-medium text-white">
+        Actions rapides
+      </h2>
 
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span
-              className={`text-sm font-medium tracking-tight ${
-                task.done ? "text-neutral-400" : "text-white"
+      <div className="grid grid-cols-2 gap-3">
+        {tasks.map((task) => {
+          const Icon = TASK_ICON[task.id];
+          return (
+            <button
+              key={task.id}
+              onClick={() => handleTap(task)}
+              disabled={task.done}
+              className={`relative flex flex-col items-center gap-3 rounded-2xl border p-6 text-center transition ${
+                task.done
+                  ? "border-neutral-900 bg-black"
+                  : "border-neutral-800 bg-neutral-900 active:scale-[0.98]"
               }`}
             >
-              {task.label}
-            </span>
-            {task.done && (
-              <span className="text-[11px] tracking-wide text-neutral-600">
-                {task.generatedNote} · {task.time} · {task.author}
+              {task.requiresPhoto && !task.done && (
+                <Camera
+                  className="absolute right-3 top-3 h-3.5 w-3.5 text-neutral-500"
+                  strokeWidth={1.5}
+                />
+              )}
+              {task.done && (
+                <div className="absolute right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full bg-white">
+                  <Check className="h-2.5 w-2.5 text-black" strokeWidth={3} />
+                </div>
+              )}
+
+              <Icon
+                className={task.done ? "h-8 w-8 text-neutral-600" : "h-8 w-8 text-white"}
+                strokeWidth={1.5}
+              />
+              <span
+                className={`text-sm ${task.done ? "text-neutral-500" : "text-white"}`}
+              >
+                {task.label}
               </span>
-            )}
-          </div>
-        </button>
-      ))}
+              {task.done && (
+                <span className="text-[10px] tracking-wide text-neutral-600">
+                  {task.time} · {task.author}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

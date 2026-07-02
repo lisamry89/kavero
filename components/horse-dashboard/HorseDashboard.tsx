@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FeedItem, HealthEvent, Horse, LogTask } from "@/lib/types";
+import { ChatMessage, FeedItem, HealthEvent, Horse, LogTask } from "@/lib/types";
 import { HorseHeader } from "./HorseHeader";
 import { Tabs } from "./Tabs";
 import { FeedTab } from "./FeedTab";
 import { LogTab } from "./LogTab";
 import { CalendarTab } from "./CalendarTab";
-import { BottomNav } from "./BottomNav";
+import { BottomNav, NavId } from "./BottomNav";
+import { MessagingScreen } from "./MessagingScreen";
 
 const STAFF_NAME = "Julien";
 
@@ -29,15 +30,24 @@ export function HorseDashboard({
   feed,
   logTasks,
   healthEvents,
+  messages,
 }: {
   horse: Horse;
   feed: FeedItem[];
   logTasks: LogTask[];
   healthEvents: HealthEvent[];
+  messages: ChatMessage[];
 }) {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
+  const [activeNav, setActiveNav] = useState<NavId>("home");
   const [feedItems, setFeedItems] = useState(feed);
   const [tasks, setTasks] = useState(logTasks);
+
+  function handleNavChange(id: NavId) {
+    setActiveNav(id);
+    if (id === "calendar") setActiveTab("health");
+    if (id === "home") setActiveTab("feed");
+  }
 
   function handleComplete(taskId: string, mediaUrl?: string) {
     const task = tasks.find((t) => t.id === taskId);
@@ -65,21 +75,29 @@ export function HorseDashboard({
 
   return (
     <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-black">
-      <div className="px-4 pb-4 pt-6">
-        <HorseHeader horse={horse} />
-      </div>
+      {activeNav === "chat" ? (
+        <MessagingScreen horse={horse} messages={messages} />
+      ) : (
+        <>
+          <div className="px-4 pb-4 pt-6">
+            <HorseHeader horse={horse} />
+          </div>
 
-      <div className="px-4">
-        <Tabs tabs={TABS} activeId={activeTab} onChange={setActiveTab} />
-      </div>
+          <div className="px-4">
+            <Tabs tabs={TABS} activeId={activeTab} onChange={setActiveTab} />
+          </div>
 
-      <div className="flex-1 px-4 pb-28 pt-5">
-        {activeTab === "feed" && <FeedTab items={feedItems} />}
-        {activeTab === "log" && <LogTab tasks={tasks} onComplete={handleComplete} />}
-        {activeTab === "health" && <CalendarTab events={healthEvents} />}
-      </div>
+          <div className="flex-1 px-4 pb-28 pt-5">
+            {activeTab === "feed" && <FeedTab items={feedItems} />}
+            {activeTab === "log" && (
+              <LogTab tasks={tasks} onComplete={handleComplete} />
+            )}
+            {activeTab === "health" && <CalendarTab events={healthEvents} />}
+          </div>
+        </>
+      )}
 
-      <BottomNav />
+      <BottomNav activeId={activeNav} onChange={handleNavChange} />
     </div>
   );
 }

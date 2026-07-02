@@ -1,9 +1,10 @@
 import Image from "next/image";
+import { Clock } from "lucide-react";
 import { FeedItem } from "@/lib/types";
 
 function MediaCard({ item }: { item: FeedItem }) {
   return (
-    <div className="relative h-[70vh] w-full overflow-hidden rounded-2xl">
+    <div className="relative h-[65vh] w-full overflow-hidden rounded-[2rem] border border-white/10">
       <Image
         src={item.mediaUrl!}
         alt={item.title}
@@ -11,11 +12,13 @@ function MediaCard({ item }: { item: FeedItem }) {
         priority
         className="object-cover"
       />
-      <div className="absolute inset-x-0 bottom-0 border-t border-white/10 bg-white/10 px-5 py-4 backdrop-blur-md">
-        <p className="text-sm font-light text-white/95">
-          {item.title} par {item.author}{" "}
-          <span className="text-white/60">• {item.time}</span>
-        </p>
+      <div className="absolute inset-x-0 bottom-5 flex justify-center px-5">
+        <div className="flex items-center gap-3 rounded-full border border-white/15 bg-black/30 py-2.5 pl-4 pr-3 backdrop-blur-lg">
+          <p className="text-sm font-light text-white">
+            {item.title} par {item.author} • {item.time}
+          </p>
+          <Clock className="h-3.5 w-3.5 shrink-0 text-white/70" strokeWidth={1.5} />
+        </div>
       </div>
     </div>
   );

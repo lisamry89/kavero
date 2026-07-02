@@ -42,3 +42,14 @@ export interface HealthEvent {
   date: string;
   time: string;
 }
+
+export type MessageSender = "manager" | "owner";
+export type MessageKind = "text" | "file";
+
+export interface ChatMessage {
+  id: string;
+  sender: MessageSender;
+  kind: MessageKind;
+  content: string;
+  fileName?: string;
+}

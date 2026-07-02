@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        serif: ['"Playfair Display"', "Georgia", "serif"],
       },
       letterSpacing: {
         widest2: "0.2em",
