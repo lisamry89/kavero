@@ -17,7 +17,7 @@ export const mockFeed: FeedItem[] = [
   {
     id: "f1",
     kind: "photo",
-    title: "Sortie au paddock effectuée",
+    title: "Sortie au paddock",
     time: "16:45",
     author: "Julien",
     mediaUrl:

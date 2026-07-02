@@ -1,57 +1,33 @@
 import Image from "next/image";
-import { Zap } from "lucide-react";
 import { FeedItem } from "@/lib/types";
-import { ShareIconButton } from "./ShareIconButton";
-
-const TEXT_SHADOW = { textShadow: "0 1px 6px rgba(0,0,0,0.7)" };
 
 function MediaCard({ item }: { item: FeedItem }) {
   return (
-    <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-neutral-800">
+    <div className="relative h-[70vh] w-full overflow-hidden rounded-2xl">
       <Image
         src={item.mediaUrl!}
         alt={item.title}
         fill
+        priority
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
-
-      <div className="absolute right-3 top-3">
-        <ShareIconButton label={item.title} />
-      </div>
-
-      <div className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 p-4">
-        <span
-          className="text-base font-semibold tracking-tight text-white"
-          style={TEXT_SHADOW}
-        >
-          {item.title}
-        </span>
-        <span
-          className="text-xs tracking-wide text-white/80"
-          style={TEXT_SHADOW}
-        >
-          {item.time} · {item.author}
-        </span>
+      <div className="absolute inset-x-0 bottom-0 border-t border-white/10 bg-white/10 px-5 py-4 backdrop-blur-md">
+        <p className="text-sm font-light text-white/95">
+          {item.title} par {item.author}{" "}
+          <span className="text-white/60">• {item.time}</span>
+        </p>
       </div>
     </div>
   );
 }
 
-function FlashCard({ item }: { item: FeedItem }) {
+function FlashRow({ item }: { item: FeedItem }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-800">
-        <Zap className="h-4 w-4 text-white" strokeWidth={1.5} />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="text-sm font-medium tracking-tight text-white">
-          {item.title}
-        </span>
-        <span className="text-[11px] tracking-wide text-neutral-500">
-          {item.time} · {item.author}
-        </span>
-      </div>
+    <div className="flex items-center gap-3 border-t border-neutral-900 py-3">
+      <span className="h-1 w-1 shrink-0 rounded-full bg-neutral-500" />
+      <p className="flex-1 text-[13px] font-light text-neutral-400">
+        {item.title} <span className="text-neutral-600">· {item.time}</span>
+      </p>
     </div>
   );
 }
@@ -66,12 +42,12 @@ export function FeedTab({ items }: { items: FeedItem[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {items.map((item) =>
         item.mediaUrl ? (
           <MediaCard key={item.id} item={item} />
         ) : (
-          <FlashCard key={item.id} item={item} />
+          <FlashRow key={item.id} item={item} />
         )
       )}
     </div>

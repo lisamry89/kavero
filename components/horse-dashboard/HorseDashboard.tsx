@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FeedItem, HealthEvent, Horse, LogTask } from "@/lib/types";
-import { HorseProfileCard } from "./HorseProfileCard";
+import { HorseHeader } from "./HorseHeader";
 import { Tabs } from "./Tabs";
 import { FeedTab } from "./FeedTab";
 import { LogTab } from "./LogTab";
@@ -54,7 +54,7 @@ export function HorseDashboard({
       const highlight: FeedItem = {
         id: `f-${taskId}-${Date.now()}`,
         kind: "photo",
-        title: task.generatedNote,
+        title: "Sortie au paddock",
         time,
         author: STAFF_NAME,
         mediaUrl,
@@ -65,8 +65,8 @@ export function HorseDashboard({
 
   return (
     <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-black">
-      <div className="px-4 pb-4 pt-4">
-        <HorseProfileCard horse={horse} />
+      <div className="px-4 pb-4 pt-6">
+        <HorseHeader horse={horse} />
       </div>
 
       <div className="px-4">
