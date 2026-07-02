@@ -52,6 +52,14 @@ export const mockWorkoutHistory: WorkoutSession[] = [
       "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=800&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=800&auto=format&fit=crop",
     ],
+    route: [
+      { lat: 48.8566, lng: 2.3522 },
+      { lat: 48.8571, lng: 2.3548 },
+      { lat: 48.8582, lng: 2.3561 },
+      { lat: 48.8579, lng: 2.359 },
+      { lat: 48.859, lng: 2.3615 },
+      { lat: 48.858, lng: 2.364 },
+    ],
   },
   {
     id: "w0",
@@ -64,6 +72,13 @@ export const mockWorkoutHistory: WorkoutSession[] = [
     gaits: { pas: 30, trot: 8, galop: 0 },
     memories: [
       "https://images.unsplash.com/photo-1598974357801-cbca100e65d3?q=80&w=800&auto=format&fit=crop",
+    ],
+    route: [
+      { lat: 48.85, lng: 2.34 },
+      { lat: 48.8515, lng: 2.339 },
+      { lat: 48.853, lng: 2.341 },
+      { lat: 48.8525, lng: 2.3435 },
+      { lat: 48.851, lng: 2.343 },
     ],
   },
 ];
@@ -89,6 +104,7 @@ export const mockFeed: FeedItem[] = [
     mapPlaceholder: true,
     viewed: false,
     workoutId: "w1",
+    route: mockWorkoutHistory[0].route,
   },
   {
     id: "f2",

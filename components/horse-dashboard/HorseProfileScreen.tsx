@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Image from "next/image";
 import { Camera, FileImage, FileText, Plus } from "lucide-react";
 import { DocumentKind, Horse, HorseDocument, HorseGender, Pedigree } from "@/lib/types";
@@ -37,19 +37,57 @@ function PedigreeNode({ label, muted = false }: { label: string; muted?: boolean
   );
 }
 
+function DocumentRow({ doc }: { doc: HorseDocument }) {
+  const Icon = doc.kind === "image" ? FileImage : FileText;
+  const content = (
+    <>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-800">
+        <Icon className="h-4 w-4 text-white" strokeWidth={1.5} />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm text-white">{doc.name}</span>
+        <span className="text-xs text-neutral-500">Ajouté le {doc.addedAt}</span>
+      </div>
+    </>
+  );
+
+  if (doc.url) {
+    return (
+      <a
+        href={doc.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 active:scale-[0.98]"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3">
+      {content}
+    </div>
+  );
+}
+
 export function HorseProfileScreen({
   horse,
+  photoUrl,
   pedigree,
-  documents: initialDocuments,
+  documents,
   onBack,
+  onPhotoChange,
+  onAddDocument,
 }: {
   horse: Horse;
+  photoUrl: string;
   pedigree: Pedigree;
   documents: HorseDocument[];
   onBack: () => void;
+  onPhotoChange: (url: string) => void;
+  onAddDocument: (doc: HorseDocument) => void;
 }) {
-  const [documents, setDocuments] = useState(initialDocuments);
-  const [photoUrl, setPhotoUrl] = useState(horse.photoUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,15 +95,13 @@ export function HorseProfileScreen({
     const file = e.target.files?.[0];
     if (file) {
       const kind: DocumentKind = file.type.startsWith("image/") ? "image" : "pdf";
-      setDocuments((prev) => [
-        {
-          id: `d-${Date.now()}`,
-          name: file.name.replace(/\.[^/.]+$/, ""),
-          kind,
-          addedAt: new Date().toLocaleDateString("fr-FR"),
-        },
-        ...prev,
-      ]);
+      onAddDocument({
+        id: `d-${Date.now()}`,
+        name: file.name.replace(/\.[^/.]+$/, ""),
+        kind,
+        addedAt: new Date().toLocaleDateString("fr-FR"),
+        url: URL.createObjectURL(file),
+      });
     }
     e.target.value = "";
   }
@@ -73,7 +109,7 @@ export function HorseProfileScreen({
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      setPhotoUrl(URL.createObjectURL(file));
+      onPhotoChange(URL.createObjectURL(file));
     }
     e.target.value = "";
   }
@@ -177,23 +213,9 @@ export function HorseProfileScreen({
             </p>
           ) : (
             <div className="flex flex-col gap-2">
-              {documents.map((doc) => {
-                const Icon = doc.kind === "image" ? FileImage : FileText;
-                return (
-                  <div
-                    key={doc.id}
-                    className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3"
-                  >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-800">
-                      <Icon className="h-4 w-4 text-white" strokeWidth={1.5} />
-                    </div>
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-sm text-white">{doc.name}</span>
-                      <span className="text-xs text-neutral-500">Ajouté le {doc.addedAt}</span>
-                    </div>
-                  </div>
-                );
-              })}
+              {documents.map((doc) => (
+                <DocumentRow key={doc.id} doc={doc} />
+              ))}
             </div>
           )}
         </div>

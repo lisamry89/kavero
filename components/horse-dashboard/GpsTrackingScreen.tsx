@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MapPin, Square } from "lucide-react";
-import { WorkoutSession } from "@/lib/types";
+import { MapPin, Pause, Play, Square } from "lucide-react";
+import { RoutePoint, WorkoutSession } from "@/lib/types";
+import { haversineDistanceKm } from "@/lib/geo";
 import { ScreenHeader } from "./ScreenHeader";
 
+type Status = "idle" | "running" | "paused";
 type GpsStatus = "acquiring" | "active" | "unavailable";
+
+const MIN_DELTA_KM = 0.002;
 
 function formatElapsed(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60)
@@ -36,21 +40,29 @@ export function GpsTrackingScreen({
   onCancel: () => void;
   onStop: (draft: Omit<WorkoutSession, "id">) => void;
 }) {
+  const [status, setStatus] = useState<Status>("idle");
   const [elapsed, setElapsed] = useState(0);
   const [distanceKm, setDistanceKm] = useState(0);
   const [gpsStatus, setGpsStatus] = useState<GpsStatus>("acquiring");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const watchIdRef = useRef<number | null>(null);
+  const routeRef = useRef<RoutePoint[]>([]);
+  const lastPointRef = useRef<RoutePoint | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsed((s) => s + 1);
-      setDistanceKm((d) => d + 0.0025 + Math.random() * 0.002);
-    }, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (watchIdRef.current !== null && typeof navigator !== "undefined") {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
   }, []);
 
-  useEffect(() => {
+  function startTracking() {
+    intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
       setGpsStatus("unavailable");
       return;
@@ -58,19 +70,56 @@ export function GpsTrackingScreen({
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         setGpsStatus("active");
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const point = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCoords(point);
+
+        const last = lastPointRef.current;
+        if (!last) {
+          lastPointRef.current = point;
+          routeRef.current = [point];
+          return;
+        }
+        const delta = haversineDistanceKm(last, point);
+        if (delta > MIN_DELTA_KM) {
+          setDistanceKm((d) => d + delta);
+          lastPointRef.current = point;
+          routeRef.current = [...routeRef.current, point];
+        }
       },
       () => setGpsStatus("unavailable"),
       { enableHighAccuracy: true }
     );
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-    };
-  }, []);
+  }
 
-  function handleStop() {
+  function pauseTracking() {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+  }
+
+  function handlePlay() {
+    setStatus("running");
+    startTracking();
+  }
+
+  function handlePause() {
+    setStatus("paused");
+    pauseTracking();
+  }
+
+  function handleResume() {
+    setStatus("running");
+    startTracking();
+  }
+
+  function handleFinish() {
+    pauseTracking();
+
     const totalMinutes = Math.max(1, Math.round(elapsed / 60));
     const pas = Math.round(totalMinutes * 0.4);
     const trot = Math.round(totalMinutes * 0.35);
@@ -83,9 +132,10 @@ export function GpsTrackingScreen({
       time: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
       author,
       duration: `${totalMinutes} min`,
-      distance: `${distanceKm.toFixed(1)} km`,
+      distance: `${distanceKm.toFixed(2)} km`,
       gaits: { pas, trot, galop },
       memories: [],
+      route: routeRef.current,
     });
   }
 
@@ -97,7 +147,7 @@ export function GpsTrackingScreen({
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full ${STATUS_DOT[gpsStatus]}`} />
           <span className="text-xs uppercase tracking-widest2 text-neutral-500">
-            {STATUS_LABEL[gpsStatus]}
+            {status === "idle" ? "Prêt à démarrer" : STATUS_LABEL[gpsStatus]}
           </span>
         </div>
 
@@ -116,14 +166,52 @@ export function GpsTrackingScreen({
         </div>
       </div>
 
-      <div className="flex justify-center pb-10">
-        <button
-          onClick={handleStop}
-          aria-label="Arrêter l'activité"
-          className="flex h-20 w-20 items-center justify-center rounded-full bg-white active:scale-95"
-        >
-          <Square className="h-6 w-6 text-black" fill="black" strokeWidth={1.5} />
-        </button>
+      <div className="flex items-center justify-center gap-6 pb-10">
+        {status === "idle" && (
+          <button
+            onClick={handlePlay}
+            aria-label="Démarrer l'activité"
+            className="flex h-20 w-20 items-center justify-center rounded-full bg-white active:scale-95"
+          >
+            <Play className="h-7 w-7 text-black" fill="black" strokeWidth={1.5} />
+          </button>
+        )}
+        {status === "running" && (
+          <>
+            <button
+              onClick={handlePause}
+              aria-label="Mettre en pause"
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-neutral-700 active:scale-95"
+            >
+              <Pause className="h-5 w-5 text-white" fill="white" strokeWidth={1.5} />
+            </button>
+            <button
+              onClick={handleFinish}
+              aria-label="Terminer l'activité"
+              className="flex h-20 w-20 items-center justify-center rounded-full bg-white active:scale-95"
+            >
+              <Square className="h-6 w-6 text-black" fill="black" strokeWidth={1.5} />
+            </button>
+          </>
+        )}
+        {status === "paused" && (
+          <>
+            <button
+              onClick={handleResume}
+              aria-label="Reprendre l'activité"
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-neutral-700 active:scale-95"
+            >
+              <Play className="h-5 w-5 text-white" fill="white" strokeWidth={1.5} />
+            </button>
+            <button
+              onClick={handleFinish}
+              aria-label="Terminer l'activité"
+              className="flex h-20 w-20 items-center justify-center rounded-full bg-white active:scale-95"
+            >
+              <Square className="h-6 w-6 text-black" fill="black" strokeWidth={1.5} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

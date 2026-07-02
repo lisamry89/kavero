@@ -69,10 +69,17 @@ export function HorseDashboard({
   const [storyOpen, setStoryOpen] = useState(false);
   const [sessions, setSessions] = useState(workoutHistory);
   const [viewingSessionId, setViewingSessionId] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState(horse.photoUrl);
+  const [horseDocuments, setHorseDocuments] = useState(documents);
 
   const hasUnseenStory = feedItems.some((item) => !item.viewed);
   const latestFeedItem = feedItems[0];
   const viewingSession = sessions.find((s) => s.id === viewingSessionId);
+  const displayHorse = { ...horse, photoUrl };
+
+  function handleAddDocument(doc: HorseDocument) {
+    setHorseDocuments((prev) => [doc, ...prev]);
+  }
 
   function goHome() {
     setActiveNav("home");
@@ -168,9 +175,12 @@ export function HorseDashboard({
         {activeNav === "profile" && (
           <HorseProfileScreen
             horse={horse}
+            photoUrl={photoUrl}
             pedigree={pedigree}
-            documents={documents}
+            documents={horseDocuments}
             onBack={goHome}
+            onPhotoChange={setPhotoUrl}
+            onAddDocument={handleAddDocument}
           />
         )}
         {activeNav === "gps-tracking" && (
@@ -185,7 +195,7 @@ export function HorseDashboard({
         )}
         {activeNav === "workout-tracker" && viewingSession && (
           <WorkoutTrackerScreen
-            horse={horse}
+            horse={displayHorse}
             session={viewingSession}
             onBack={goHome}
             onAddMemory={handleAddMemory}
@@ -198,7 +208,7 @@ export function HorseDashboard({
                 <QuickAddButton onSelectWorkout={() => setActiveNav("gps-tracking")} />
               </div>
               <HorseHeader
-                horse={horse}
+                horse={displayHorse}
                 hasUnseenStory={hasUnseenStory}
                 onOpenProfile={() => setActiveNav("profile")}
                 onOpenStory={handleOpenStory}

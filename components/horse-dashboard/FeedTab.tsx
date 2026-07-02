@@ -1,29 +1,32 @@
 import Image from "next/image";
 import { ChevronRight, Clock } from "lucide-react";
-import { FeedItem, WorkoutStats } from "@/lib/types";
+import { FeedItem, RoutePoint, WorkoutStats } from "@/lib/types";
+import { pathFromProjected, projectRoute } from "@/lib/geo";
 
-function RouteMap() {
+const FALLBACK_ROUTE_D =
+  "M40 160 C 70 100, 60 60, 110 55 S 160 90, 150 40 S 210 10, 240 45" +
+  " S 220 110, 270 120 S 340 100, 360 150";
+
+function RouteMap({ route }: { route?: RoutePoint[] }) {
+  const projected = route && route.length >= 2 ? projectRoute(route, 400, 200) : null;
+  const d = projected ? pathFromProjected(projected) : FALLBACK_ROUTE_D;
+  const start = projected?.[0];
+  const end = projected?.[projected.length - 1];
+
   return (
     <div className="relative h-40 w-full overflow-hidden rounded-xl bg-neutral-950">
       <svg viewBox="0 0 400 200" className="h-full w-full" preserveAspectRatio="none">
-        <path
-          d="M40 160 C 70 100, 60 60, 110 55 S 160 90, 150 40 S 210 10, 240 45
-             S 220 110, 270 120 S 340 100, 360 150"
-          fill="none"
-          stroke="#525252"
-          strokeWidth="6"
-          strokeLinecap="round"
-        />
-        <path
-          d="M40 160 C 70 100, 60 60, 110 55 S 160 90, 150 40 S 210 10, 240 45
-             S 220 110, 270 120 S 340 100, 360 150"
+        <path d={d} fill="none" stroke="#525252" strokeWidth="6" strokeLinecap="round" />
+        <path d={d} fill="none" stroke="#e5e5e5" strokeWidth="2" strokeLinecap="round" />
+        <circle cx={start?.x ?? 40} cy={start?.y ?? 160} r="5" fill="#e5e5e5" />
+        <circle
+          cx={end?.x ?? 360}
+          cy={end?.y ?? 150}
+          r="5"
           fill="none"
           stroke="#e5e5e5"
           strokeWidth="2"
-          strokeLinecap="round"
         />
-        <circle cx="40" cy="160" r="5" fill="#e5e5e5" />
-        <circle cx="360" cy="150" r="5" fill="none" stroke="#e5e5e5" strokeWidth="2" />
       </svg>
     </div>
   );
@@ -58,7 +61,7 @@ function WorkoutCard({
         </span>
       </div>
 
-      <RouteMap />
+      <RouteMap route={item.route} />
 
       <div className="grid grid-cols-3 divide-x divide-neutral-800 border-t border-neutral-800 pt-3">
         <WorkoutStatCell label="Durée" value={item.stats.duration} />

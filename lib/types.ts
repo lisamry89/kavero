@@ -37,6 +37,7 @@ export interface HorseDocument {
   name: string;
   kind: DocumentKind;
   addedAt: string;
+  url?: string;
 }
 
 export type FeedKind = "photo" | "video" | "flash" | "workout";
@@ -45,6 +46,11 @@ export interface WorkoutStats {
   duration: string;
   distance: string;
   topSpeed: string;
+}
+
+export interface RoutePoint {
+  lat: number;
+  lng: number;
 }
 
 export interface FeedItem {
@@ -58,6 +64,7 @@ export interface FeedItem {
   stats?: WorkoutStats;
   mapPlaceholder?: boolean;
   workoutId?: string;
+  route?: RoutePoint[];
 }
 
 export interface LogTask {
@@ -131,4 +138,5 @@ export interface WorkoutSession {
   distance: string;
   gaits: GaitBreakdown;
   memories: string[];
+  route?: RoutePoint[];
 }

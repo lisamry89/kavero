@@ -3,7 +3,8 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { MapPin, Plus } from "lucide-react";
-import { Horse, WorkoutSession } from "@/lib/types";
+import { Horse, RoutePoint, WorkoutSession } from "@/lib/types";
+import { pathFromProjected, projectRoute } from "@/lib/geo";
 import { ScreenHeader } from "./ScreenHeader";
 
 const GAIT_COLOR = {
@@ -18,31 +19,51 @@ const GAIT_LABEL = {
   galop: "Galop",
 } as const;
 
-function GaitRouteMap({ distance, duration }: { distance: string; duration: string }) {
+const FALLBACK_SEGMENTS = [
+  { color: GAIT_COLOR.pas, d: "M40 170 C 70 150, 90 120, 80 95 S 130 60, 150 90" },
+  { color: GAIT_COLOR.trot, d: "M150 90 S 190 130, 220 100 S 250 40, 280 60" },
+  { color: GAIT_COLOR.galop, d: "M280 60 S 300 100, 330 90 S 350 130, 360 165" },
+];
+
+function buildRouteSegments(route: RoutePoint[] | undefined) {
+  if (!route || route.length < 2) return null;
+
+  const projected = projectRoute(route, 400, 220);
+  const n = projected.length;
+  const i1 = Math.max(1, Math.floor(n / 3));
+  const i2 = Math.max(i1 + 1, Math.floor((2 * n) / 3));
+
+  return [
+    { color: GAIT_COLOR.pas, d: pathFromProjected(projected.slice(0, i1 + 1)) },
+    { color: GAIT_COLOR.trot, d: pathFromProjected(projected.slice(i1, i2 + 1)) },
+    { color: GAIT_COLOR.galop, d: pathFromProjected(projected.slice(i2)) },
+  ];
+}
+
+function GaitRouteMap({
+  distance,
+  duration,
+  route,
+}: {
+  distance: string;
+  duration: string;
+  route?: RoutePoint[];
+}) {
+  const segments = buildRouteSegments(route) ?? FALLBACK_SEGMENTS;
+
   return (
     <div className="relative h-48 w-full overflow-hidden rounded-xl bg-neutral-950">
       <svg viewBox="0 0 400 220" className="h-full w-full" preserveAspectRatio="none">
-        <path
-          d="M40 170 C 70 150, 90 120, 80 95 S 130 60, 150 90"
-          fill="none"
-          stroke={GAIT_COLOR.pas}
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-        <path
-          d="M150 90 S 190 130, 220 100 S 250 40, 280 60"
-          fill="none"
-          stroke={GAIT_COLOR.trot}
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-        <path
-          d="M280 60 S 300 100, 330 90 S 350 130, 360 165"
-          fill="none"
-          stroke={GAIT_COLOR.galop}
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
+        {segments.map((seg, i) => (
+          <path
+            key={i}
+            d={seg.d}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+        ))}
       </svg>
       <MapPin
         className="absolute h-5 w-5 -translate-x-1/2 -translate-y-full text-white drop-shadow"
@@ -103,7 +124,11 @@ export function WorkoutTrackerScreen({
 
       <div className="flex flex-col gap-8 px-4 pb-10">
         <div className="flex flex-col gap-3">
-          <GaitRouteMap distance={session.distance} duration={session.duration} />
+          <GaitRouteMap
+            distance={session.distance}
+            duration={session.duration}
+            route={session.route}
+          />
           <div className="flex items-center justify-center gap-4">
             {(Object.keys(GAIT_LABEL) as (keyof typeof GAIT_LABEL)[]).map((key) => (
               <span key={key} className="flex items-center gap-1.5 text-xs text-neutral-400">
