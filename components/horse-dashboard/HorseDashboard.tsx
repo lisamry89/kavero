@@ -22,11 +22,6 @@ import { BottomNav, NavId } from "./BottomNav";
 
 const STAFF_NAME = "Julien";
 
-const TABS = [
-  { id: "feed", label: "Fil d'actualité" },
-  { id: "log", label: "Suivi quotidien" },
-];
-
 function nowLabel() {
   return new Date().toLocaleTimeString("fr-FR", {
     hour: "2-digit",
@@ -51,6 +46,10 @@ export function HorseDashboard({
   conversations: Conversation[];
   notifications: AppNotification[];
 }) {
+  const TABS = [
+    { id: "feed", label: horse.name },
+    { id: "log", label: "Suivi quotidien" },
+  ];
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [activeNav, setActiveNav] = useState<NavId>("home");
   const [feedItems, setFeedItems] = useState(feed);

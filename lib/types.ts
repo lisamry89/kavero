@@ -51,7 +51,13 @@ export interface LogTask {
   requiresPhoto?: boolean;
 }
 
-export type HealthEventType = "vet" | "farrier";
+export type HealthEventType =
+  | "vet"
+  | "farrier"
+  | "dentist"
+  | "osteopath"
+  | "competition"
+  | "other";
 
 export interface HealthEvent {
   id: string;

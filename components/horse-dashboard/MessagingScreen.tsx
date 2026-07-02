@@ -1,8 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, FileText, Paperclip, Send } from "lucide-react";
+import { ChevronLeft, FileText, Loader2, Paperclip, Send } from "lucide-react";
 import { ChatMessage, Conversation } from "@/lib/types";
+
+function FileBubble({ message }: { message: ChatMessage }) {
+  const [isOpening, setIsOpening] = useState(false);
+
+  function handleOpen() {
+    setIsOpening(true);
+    // MVP: simulates opening the shared file before wiring real file storage.
+    setTimeout(() => setIsOpening(false), 900);
+  }
+
+  return (
+    <button
+      onClick={handleOpen}
+      className="flex max-w-[85%] items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-left transition active:scale-[0.98]"
+    >
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-800">
+        {isOpening ? (
+          <Loader2 className="h-4 w-4 animate-spin text-white" strokeWidth={1.5} />
+        ) : (
+          <FileText className="h-4 w-4 text-white" strokeWidth={1.5} />
+        )}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-sm text-white">{message.content}</span>
+        <span className="text-xs text-neutral-500">
+          {isOpening ? "Ouverture..." : message.fileName}
+        </span>
+      </div>
+    </button>
+  );
+}
 
 function Avatar({ name, online }: { name: string; online: boolean }) {
   return (
@@ -24,15 +55,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         {isOwner ? "Vous" : "Eux"}
       </span>
       {message.kind === "file" ? (
-        <div className="flex max-w-[85%] items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-800">
-            <FileText className="h-4 w-4 text-white" strokeWidth={1.5} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm text-white">{message.content}</span>
-            <span className="text-xs text-neutral-500">{message.fileName}</span>
-          </div>
-        </div>
+        <FileBubble message={message} />
       ) : (
         <div
           className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${

@@ -1,17 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { Hammer, Plus, Stethoscope, X, type LucideIcon } from "lucide-react";
+import {
+  Activity,
+  Hammer,
+  MoreHorizontal,
+  Plus,
+  Stethoscope,
+  Trophy,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { HealthEvent, HealthEventType } from "@/lib/types";
 
 const TYPE_ICON: Record<HealthEventType, LucideIcon> = {
   vet: Stethoscope,
   farrier: Hammer,
+  dentist: Stethoscope,
+  osteopath: Activity,
+  competition: Trophy,
+  other: MoreHorizontal,
 };
 
 const TYPE_LABEL: Record<HealthEventType, string> = {
   vet: "Vétérinaire",
   farrier: "Maréchal-ferrant",
+  dentist: "Dentiste équin",
+  osteopath: "Ostéopathe",
+  competition: "Concours",
+  other: "Autre",
 };
 
 function buildDateStrip() {
@@ -82,21 +99,17 @@ export function CalendarScreen({
 
       {showForm && (
         <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
-          <div className="flex gap-2">
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as HealthEventType)}
+            className="rounded-lg border border-neutral-800 bg-black px-3 py-2.5 text-sm text-white focus:outline-none"
+          >
             {(Object.keys(TYPE_LABEL) as HealthEventType[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setType(t)}
-                className={`flex-1 rounded-lg border px-3 py-2 text-xs uppercase tracking-wide ${
-                  type === t
-                    ? "border-white text-white"
-                    : "border-neutral-800 text-neutral-500"
-                }`}
-              >
+              <option key={t} value={t}>
                 {TYPE_LABEL[t]}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}

@@ -75,25 +75,29 @@ export function HorseProfileScreen({
 
         <div className="flex flex-col gap-3">
           <h2 className="font-serif text-base text-white">Généalogie</h2>
-          <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
-            <div className="flex items-center">
+          <div className="grid grid-cols-[minmax(90px,1fr)_minmax(110px,1fr)_minmax(120px,1fr)] gap-x-3 gap-y-2 overflow-x-auto pb-2">
+            <div className="row-span-4 flex items-center">
               <PedigreeNode label={horse.name} />
             </div>
-            <div className="flex flex-col justify-center gap-3 border-l border-neutral-800 pl-3">
-              <div className="flex items-center gap-3">
-                <PedigreeNode label={pedigree.sire.name} />
-                <div className="flex flex-col gap-2 border-l border-neutral-800 pl-3">
-                  <PedigreeNode label={pedigree.sire.sire ?? "—"} muted />
-                  <PedigreeNode label={pedigree.sire.dam ?? "—"} muted />
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <PedigreeNode label={pedigree.dam.name} />
-                <div className="flex flex-col gap-2 border-l border-neutral-800 pl-3">
-                  <PedigreeNode label={pedigree.dam.sire ?? "—"} muted />
-                  <PedigreeNode label={pedigree.dam.dam ?? "—"} muted />
-                </div>
-              </div>
+
+            <div className="row-span-2 flex items-center border-l border-neutral-800 pl-3">
+              <PedigreeNode label={pedigree.sire.name} />
+            </div>
+            <div className="flex items-center border-l border-neutral-800 pl-3">
+              <PedigreeNode label={pedigree.sire.sire ?? "—"} muted />
+            </div>
+            <div className="flex items-center border-l border-neutral-800 pl-3">
+              <PedigreeNode label={pedigree.sire.dam ?? "—"} muted />
+            </div>
+
+            <div className="row-span-2 flex items-center border-l border-neutral-800 pl-3">
+              <PedigreeNode label={pedigree.dam.name} />
+            </div>
+            <div className="flex items-center border-l border-neutral-800 pl-3">
+              <PedigreeNode label={pedigree.dam.sire ?? "—"} muted />
+            </div>
+            <div className="flex items-center border-l border-neutral-800 pl-3">
+              <PedigreeNode label={pedigree.dam.dam ?? "—"} muted />
             </div>
           </div>
         </div>
