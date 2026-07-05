@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kavero</string>
+    <string name="title_activity_main">Kavero</string>
+    <string name="package_name">com.kavero.app</string>
+    <string name="custom_url_scheme">com.kavero.app</string>
+</resources>

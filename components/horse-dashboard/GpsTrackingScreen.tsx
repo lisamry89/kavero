@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { Capacitor } from "@capacitor/core";
+import { Geolocation } from "@capacitor/geolocation";
 import { MapPin, Pause, Play, Square } from "lucide-react";
 import { Gait, RoutePoint, WorkoutSession } from "@/lib/types";
 import { classifyGait, gaitBreakdownFromSegments, classifyRouteSegments, haversineDistanceKm } from "@/lib/geo";
@@ -61,54 +63,65 @@ export function GpsTrackingScreen({
   const [currentSpeedKmh, setCurrentSpeedKmh] = useState(0);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const watchIdRef = useRef<number | null>(null);
+  const watchIdRef = useRef<string | null>(null);
   const lastPointRef = useRef<RoutePoint | null>(null);
 
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (watchIdRef.current !== null && typeof navigator !== "undefined") {
-        navigator.geolocation.clearWatch(watchIdRef.current);
+      if (watchIdRef.current) {
+        Geolocation.clearWatch({ id: watchIdRef.current });
       }
     };
   }, []);
 
-  function startTracking() {
+  async function startTracking() {
     intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
 
-    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
-      setGpsStatus("unavailable");
-      return;
-    }
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        setGpsStatus("active");
-        const point: RoutePoint = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          t: Date.now(),
-        };
-
-        const last = lastPointRef.current;
-        if (!last) {
-          lastPointRef.current = point;
-          setRoute([point]);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const permission = await Geolocation.requestPermissions();
+        if (permission.location !== "granted" && permission.coarseLocation !== "granted") {
+          setGpsStatus("unavailable");
           return;
         }
-        const delta = haversineDistanceKm(last, point);
-        if (delta > MIN_DELTA_KM) {
-          const durationH = Math.max((point.t - last.t) / 3_600_000, 1 / 3600);
-          const instantSpeed =
-            pos.coords.speed != null ? pos.coords.speed * 3.6 : delta / durationH;
-          setCurrentSpeedKmh(instantSpeed);
-          setDistanceKm((d) => d + delta);
-          lastPointRef.current = point;
-          setRoute((prev) => [...prev, point]);
+      }
+
+      watchIdRef.current = await Geolocation.watchPosition(
+        { enableHighAccuracy: true },
+        (position, err) => {
+          if (err || !position) {
+            setGpsStatus("unavailable");
+            return;
+          }
+          setGpsStatus("active");
+          const point: RoutePoint = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            t: Date.now(),
+          };
+
+          const last = lastPointRef.current;
+          if (!last) {
+            lastPointRef.current = point;
+            setRoute([point]);
+            return;
+          }
+          const delta = haversineDistanceKm(last, point);
+          if (delta > MIN_DELTA_KM) {
+            const durationH = Math.max((point.t - last.t) / 3_600_000, 1 / 3600);
+            const instantSpeed =
+              position.coords.speed != null ? position.coords.speed * 3.6 : delta / durationH;
+            setCurrentSpeedKmh(instantSpeed);
+            setDistanceKm((d) => d + delta);
+            lastPointRef.current = point;
+            setRoute((prev) => [...prev, point]);
+          }
         }
-      },
-      () => setGpsStatus("unavailable"),
-      { enableHighAccuracy: true }
-    );
+      );
+    } catch {
+      setGpsStatus("unavailable");
+    }
   }
 
   function pauseTracking() {
@@ -116,8 +129,8 @@ export function GpsTrackingScreen({
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
+    if (watchIdRef.current) {
+      Geolocation.clearWatch({ id: watchIdRef.current });
       watchIdRef.current = null;
     }
     setCurrentSpeedKmh(0);
