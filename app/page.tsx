@@ -1,28 +1,35 @@
-import { HorseDashboard } from "@/components/horse-dashboard/HorseDashboard";
+import { AppRoot } from "@/components/AppRoot";
 import {
   mockConversations,
   mockDocuments,
   mockFeed,
-  mockHealthEvents,
   mockHorse,
   mockLogTasks,
   mockNotifications,
   mockPedigree,
   mockWorkoutHistory,
 } from "@/lib/mock-data";
+import {
+  mockAppointments,
+  mockChatChannels,
+  mockStableHorses,
+} from "@/lib/manager-mock-data";
 
 export default function HomePage() {
   return (
-    <HorseDashboard
+    <AppRoot
       horse={mockHorse}
       feed={mockFeed}
       logTasks={mockLogTasks}
-      healthEvents={mockHealthEvents}
       pedigree={mockPedigree}
       documents={mockDocuments}
       conversations={mockConversations}
       notifications={mockNotifications}
       workoutHistory={mockWorkoutHistory}
+      stableName={mockHorse.stable}
+      stableHorses={mockStableHorses}
+      chatChannels={mockChatChannels}
+      appointments={mockAppointments}
     />
   );
 }

@@ -2,7 +2,6 @@ import {
   AppNotification,
   Conversation,
   FeedItem,
-  HealthEvent,
   Horse,
   HorseDocument,
   LogTask,
@@ -151,23 +150,6 @@ export const mockLogTasks: LogTask[] = [
     generatedNote: "Sortie au paddock effectuée.",
     done: false,
     requiresPhoto: true,
-  },
-];
-
-export const mockHealthEvents: HealthEvent[] = [
-  {
-    id: "h1",
-    type: "vet",
-    title: "Visite de contrôle et vaccination",
-    date: "12 juil.",
-    time: "10:00",
-  },
-  {
-    id: "h2",
-    type: "farrier",
-    title: "Ferrure complète",
-    date: "18 juil.",
-    time: "14:00",
   },
 ];
 

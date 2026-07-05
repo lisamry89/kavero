@@ -3,15 +3,17 @@
 import { useState } from "react";
 import {
   Activity,
+  Check,
   Hammer,
   MoreHorizontal,
   Plus,
+  ShieldCheck,
   Stethoscope,
   Trophy,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { HealthEvent, HealthEventType } from "@/lib/types";
+import { AppointmentStatus, CareAppointment, HealthEventType } from "@/lib/types";
 
 const TYPE_ICON: Record<HealthEventType, LucideIcon> = {
   vet: Stethoscope,
@@ -31,6 +33,18 @@ const TYPE_LABEL: Record<HealthEventType, string> = {
   other: "Autre",
 };
 
+const STATUS_LABEL: Record<AppointmentStatus, string> = {
+  pending: "En attente",
+  confirmed: "Confirmé",
+  declined: "Refusé",
+};
+
+const STATUS_DOT: Record<AppointmentStatus, string> = {
+  pending: "bg-amber-400",
+  confirmed: "bg-emerald-400",
+  declined: "bg-red-500",
+};
+
 function buildDateStrip() {
   const days = [];
   const today = new Date();
@@ -46,16 +60,27 @@ function buildDateStrip() {
   return days;
 }
 
-function eventMatchesDay(event: HealthEvent, day: { day: string; month: string }) {
-  return event.date.replace(".", "") === `${day.day} ${day.month}`;
+function appointmentMatchesDay(
+  appointment: CareAppointment,
+  day: { day: string; month: string }
+) {
+  return appointment.date.replace(".", "") === `${day.day} ${day.month}`;
 }
 
 export function CalendarScreen({
-  events,
+  horseId,
+  horseName,
+  ownerName,
+  appointments,
   onAdd,
+  onRespond,
 }: {
-  events: HealthEvent[];
-  onAdd: (event: HealthEvent) => void;
+  horseId: string;
+  horseName: string;
+  ownerName: string;
+  appointments: CareAppointment[];
+  onAdd: (appointment: CareAppointment) => void;
+  onRespond: (id: string, status: "confirmed" | "declined") => void;
 }) {
   const [dateStrip] = useState(buildDateStrip);
   const [selected, setSelected] = useState<string | null>(null);
@@ -72,11 +97,16 @@ export function CalendarScreen({
       month: "short",
     });
     onAdd({
-      id: `h-${Date.now()}`,
+      id: `a-${Date.now()}`,
+      horseId,
+      horseName,
       type,
       title: title.trim(),
       date: formattedDate,
       time,
+      status: "confirmed",
+      requestedBy: ownerName,
+      careAuthorizationRequired: false,
     });
     setTitle("");
     setDate("");
@@ -85,9 +115,9 @@ export function CalendarScreen({
   }
 
   const selectedDay = dateStrip.find((d) => d.iso === selected);
-  const visibleEvents = selectedDay
-    ? events.filter((e) => eventMatchesDay(e, selectedDay))
-    : events;
+  const visibleAppointments = selectedDay
+    ? appointments.filter((a) => appointmentMatchesDay(a, selectedDay))
+    : appointments;
 
   return (
     <div className="no-scrollbar h-full overflow-y-auto px-4 py-4">
@@ -187,31 +217,70 @@ export function CalendarScreen({
         })}
       </div>
 
-      {visibleEvents.length === 0 ? (
+      {visibleAppointments.length === 0 ? (
         <p className="py-10 text-center text-xs uppercase tracking-widest2 text-neutral-600">
           {selectedDay ? "Aucun rendez-vous ce jour" : "Aucun rendez-vous à venir"}
         </p>
       ) : (
         <div className="flex flex-col pt-6">
-          {visibleEvents.map((event, i) => {
-            const Icon = TYPE_ICON[event.type];
-            const isLast = i === visibleEvents.length - 1;
+          {visibleAppointments.map((appointment, i) => {
+            const Icon = TYPE_ICON[appointment.type];
+            const isLast = i === visibleAppointments.length - 1;
+            const needsAuthorization = appointment.status === "pending";
             return (
-              <div key={event.id} className="flex gap-4">
+              <div key={appointment.id} className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
                   {!isLast && <span className="w-px flex-1 bg-neutral-900" />}
                 </div>
                 <div className={`flex-1 ${isLast ? "" : "pb-8"}`}>
-                  <p className="text-[11px] uppercase tracking-widest2 text-neutral-500">
-                    {event.date} · {event.time}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[11px] uppercase tracking-widest2 text-neutral-500">
+                      {appointment.date} · {appointment.time}
+                    </p>
+                    <span className="flex items-center gap-1">
+                      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[appointment.status]}`} />
+                      <span className="text-[10px] uppercase tracking-widest2 text-neutral-500">
+                        {STATUS_LABEL[appointment.status]}
+                      </span>
+                    </span>
+                  </div>
                   <div className="mt-1 flex items-start justify-between gap-3">
                     <h3 className="font-serif text-lg leading-snug text-white">
-                      {event.title}
+                      {appointment.title}
                     </h3>
                     <Icon className="mt-1 h-5 w-5 shrink-0 text-neutral-600" strokeWidth={1.5} />
                   </div>
+
+                  {needsAuthorization && (
+                    <div className="mt-3 flex flex-col gap-3 rounded-xl border border-amber-900/40 bg-amber-950/20 p-3">
+                      <div className="flex items-start gap-2">
+                        <ShieldCheck
+                          className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
+                          strokeWidth={1.5}
+                        />
+                        <p className="text-xs leading-relaxed text-amber-200/90">
+                          Autorisation de soins requise — rendez-vous demandé par{" "}
+                          {appointment.requestedBy}.
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onRespond(appointment.id, "confirmed")}
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white py-2 text-xs font-medium text-black active:scale-[0.98]"
+                        >
+                          <Check className="h-3.5 w-3.5" strokeWidth={2} />
+                          Autoriser
+                        </button>
+                        <button
+                          onClick={() => onRespond(appointment.id, "declined")}
+                          className="flex-1 rounded-full border border-neutral-700 py-2 text-xs font-medium text-neutral-300 active:scale-[0.98]"
+                        >
+                          Refuser
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );

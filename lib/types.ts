@@ -86,12 +86,20 @@ export type HealthEventType =
   | "competition"
   | "other";
 
-export interface HealthEvent {
+export type AppointmentStatus = "pending" | "confirmed" | "declined";
+
+export interface CareAppointment {
   id: string;
+  horseId: string;
+  horseName: string;
   type: HealthEventType;
   title: string;
   date: string;
   time: string;
+  status: AppointmentStatus;
+  requestedBy: string;
+  careAuthorizationRequired: boolean;
+  careAuthorized?: boolean;
 }
 
 export type MessageSender = "contact" | "owner";
@@ -143,4 +151,34 @@ export interface WorkoutSession {
   gaits: GaitBreakdown;
   memories: string[];
   route?: RoutePoint[];
+}
+
+export type AppRole = "owner" | "manager";
+
+export interface StableHorse {
+  id: string;
+  name: string;
+  photoUrl: string;
+  box: string;
+  tasks: LogTask[];
+}
+
+export type ChannelKind = "general" | "urgent" | "horse";
+
+export interface ChannelMessage {
+  id: string;
+  author: string;
+  authorRole: string;
+  kind: MessageKind;
+  content: string;
+  fileName?: string;
+  time: string;
+}
+
+export interface ChatChannel {
+  id: string;
+  kind: ChannelKind;
+  name: string;
+  horseId?: string;
+  messages: ChannelMessage[];
 }

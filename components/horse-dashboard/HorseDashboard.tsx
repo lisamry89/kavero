@@ -3,15 +3,16 @@
 import { useState } from "react";
 import {
   AppNotification,
+  CareAppointment,
   Conversation,
   FeedItem,
-  HealthEvent,
   Horse,
   HorseDocument,
   LogTask,
   Pedigree,
   WorkoutSession,
 } from "@/lib/types";
+import { RoleSwitch } from "@/components/RoleSwitch";
 import { HorseHeader } from "./HorseHeader";
 import { Tabs } from "./Tabs";
 import { FeedTab } from "./FeedTab";
@@ -41,22 +42,28 @@ export function HorseDashboard({
   horse,
   feed,
   logTasks,
-  healthEvents,
+  appointments,
+  onAddAppointment,
+  onRespondAppointment,
   pedigree,
   documents,
   conversations,
   notifications,
   workoutHistory,
+  onSwitchRole,
 }: {
   horse: Horse;
   feed: FeedItem[];
   logTasks: LogTask[];
-  healthEvents: HealthEvent[];
+  appointments: CareAppointment[];
+  onAddAppointment: (appointment: CareAppointment) => void;
+  onRespondAppointment: (id: string, status: "confirmed" | "declined") => void;
   pedigree: Pedigree;
   documents: HorseDocument[];
   conversations: Conversation[];
   notifications: AppNotification[];
   workoutHistory: WorkoutSession[];
+  onSwitchRole: () => void;
 }) {
   const TABS = [
     { id: "feed", label: horse.name },
@@ -66,7 +73,6 @@ export function HorseDashboard({
   const [activeNav, setActiveNav] = useState<NavId>("home");
   const [feedItems, setFeedItems] = usePersistentState(`kavero:${horse.id}:feed`, feed);
   const [tasks, setTasks] = useState(logTasks);
-  const [events, setEvents] = useState(healthEvents);
   const [storyOpen, setStoryOpen] = useState(false);
   const [sessions, setSessions] = usePersistentState(
     `kavero:${horse.id}:workoutHistory`,
@@ -83,6 +89,7 @@ export function HorseDashboard({
   const latestFeedItem = feedItems[0];
   const viewingSession = sessions.find((s) => s.id === viewingSessionId);
   const displayHorse = { ...horse, photoUrl };
+  const ownAppointments = appointments.filter((a) => a.horseId === horse.id);
 
   function handleAddDocument(doc: HorseDocument) {
     setHorseDocuments((prev) => [doc, ...prev]);
@@ -175,8 +182,12 @@ export function HorseDashboard({
         {activeNav === "bell" && <NotificationsScreen notifications={notifications} />}
         {activeNav === "calendar" && (
           <CalendarScreen
-            events={events}
-            onAdd={(event) => setEvents((prev) => [...prev, event])}
+            horseId={horse.id}
+            horseName={horse.name}
+            ownerName={horse.owner}
+            appointments={ownAppointments}
+            onAdd={onAddAppointment}
+            onRespond={onRespondAppointment}
           />
         )}
         {activeNav === "profile" && (
@@ -213,6 +224,9 @@ export function HorseDashboard({
             <div className="relative px-4 pb-4 pt-6">
               <div className="absolute left-4 top-6 z-10">
                 <QuickAddButton onSelectWorkout={() => setActiveNav("gps-tracking")} />
+              </div>
+              <div className="absolute right-4 top-6 z-10">
+                <RoleSwitch role="owner" onSwitch={onSwitchRole} />
               </div>
               <HorseHeader
                 horse={displayHorse}
