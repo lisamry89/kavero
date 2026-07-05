@@ -1,12 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { CareAppointment, ChannelMessage, ChatChannel, StableHorse } from "@/lib/types";
+import {
+  AppNotification,
+  CareAppointment,
+  ChannelMessage,
+  ChatChannel,
+  StableHorse,
+} from "@/lib/types";
 import { ManagerHeader } from "./ManagerHeader";
 import { StaffBoard } from "./StaffBoard";
 import { ManagerAgendaScreen } from "./ManagerAgendaScreen";
 import { ManagerChatScreen } from "./ManagerChatScreen";
 import { ManagerBottomNav, ManagerNavId } from "./ManagerBottomNav";
+import { NotificationsScreen } from "@/components/horse-dashboard/NotificationsScreen";
 
 export function ManagerDashboard({
   stableName,
@@ -17,6 +24,7 @@ export function ManagerDashboard({
   onAddAppointment,
   channels,
   onSendMessage,
+  notifications,
   onSwitchRole,
 }: {
   stableName: string;
@@ -27,6 +35,7 @@ export function ManagerDashboard({
   onAddAppointment: (appointment: CareAppointment) => void;
   channels: ChatChannel[];
   onSendMessage: (channelId: string, message: ChannelMessage) => void;
+  notifications: AppNotification[];
   onSwitchRole: () => void;
 }) {
   const [activeNav, setActiveNav] = useState<ManagerNavId>("board");
@@ -61,6 +70,7 @@ export function ManagerDashboard({
             onSendMessage={onSendMessage}
           />
         )}
+        {activeNav === "bell" && <NotificationsScreen notifications={notifications} />}
       </div>
 
       <ManagerBottomNav activeId={activeNav} onChange={setActiveNav} />

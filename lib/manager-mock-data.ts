@@ -1,4 +1,4 @@
-import { CareAppointment, ChatChannel, StableHorse } from "./types";
+import { AppNotification, CareAppointment, ChatChannel, StableHorse } from "./types";
 
 export const mockStableHorses: StableHorse[] = [
   {
@@ -294,5 +294,15 @@ export const mockChatChannels: ChatChannel[] = [
     name: "💬 Ondine (Privé)",
     horseId: "ondine-04",
     messages: [],
+  },
+];
+
+export const mockManagerNotifications: AppNotification[] = [
+  {
+    id: "mn1",
+    kind: "message",
+    title: "Nouveau message dans #Général",
+    subtitle: "Écurie des Tilleuls",
+    time: "Hier",
   },
 ];

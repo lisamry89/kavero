@@ -1,8 +1,8 @@
 "use client";
 
-import { Calendar, ClipboardCheck, MessageCircle, type LucideIcon } from "lucide-react";
+import { Bell, Calendar, ClipboardCheck, MessageCircle, type LucideIcon } from "lucide-react";
 
-export type ManagerNavId = "board" | "agenda" | "chat";
+export type ManagerNavId = "board" | "agenda" | "chat" | "bell";
 
 interface NavItem {
   id: ManagerNavId;
@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "board", icon: ClipboardCheck, label: "Terrain" },
   { id: "agenda", icon: Calendar, label: "Agenda" },
   { id: "chat", icon: MessageCircle, label: "Chats" },
+  { id: "bell", icon: Bell, label: "Alertes" },
 ];
 
 export function ManagerBottomNav({
@@ -28,7 +29,7 @@ export function ManagerBottomNav({
       className="shrink-0 border-t border-neutral-900 bg-black/90 backdrop-blur"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid grid-cols-3 items-center px-4 pb-3 pt-3">
+      <div className="grid grid-cols-4 items-center px-4 pb-3 pt-3">
         {NAV_ITEMS.map((item) => {
           const isActive = item.id === activeId;
           const Icon = item.icon;

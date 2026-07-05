@@ -121,7 +121,7 @@ export interface Conversation {
   messages: ChatMessage[];
 }
 
-export type NotificationKind = "reminder" | "care" | "message";
+export type NotificationKind = "reminder" | "care" | "message" | "appointment";
 
 export interface AppNotification {
   id: string;
@@ -181,4 +181,20 @@ export interface ChatChannel {
   name: string;
   horseId?: string;
   messages: ChannelMessage[];
+}
+
+export type ListingCategory = "cheval" | "poney" | "materiel" | "service";
+export type ListingStatus = "active" | "sold";
+
+export interface Listing {
+  id: string;
+  title: string;
+  category: ListingCategory;
+  price: string;
+  location: string;
+  description: string;
+  photos: string[];
+  sellerName: string;
+  createdAt: string;
+  status: ListingStatus;
 }

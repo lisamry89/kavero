@@ -12,8 +12,10 @@ import {
 import {
   mockAppointments,
   mockChatChannels,
+  mockManagerNotifications,
   mockStableHorses,
 } from "@/lib/manager-mock-data";
+import { mockListings } from "@/lib/marketplace-mock-data";
 
 export default function HomePage() {
   return (
@@ -25,11 +27,13 @@ export default function HomePage() {
       documents={mockDocuments}
       conversations={mockConversations}
       notifications={mockNotifications}
+      managerNotifications={mockManagerNotifications}
       workoutHistory={mockWorkoutHistory}
       stableName={mockHorse.stable}
       stableHorses={mockStableHorses}
       chatChannels={mockChatChannels}
       appointments={mockAppointments}
+      listings={mockListings}
     />
   );
 }

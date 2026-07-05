@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Calendar, Home, MessageCircle, Sparkles, type LucideIcon } from "lucide-react";
+import { Bell, Calendar, Home, MessageCircle, Sparkles, Store, type LucideIcon } from "lucide-react";
 
 export type NavId =
   | "home"
@@ -11,7 +11,10 @@ export type NavId =
   | "bell"
   | "workout-tracker"
   | "gps-tracking"
-  | "workout-history";
+  | "workout-history"
+  | "marketplace"
+  | "listing-detail"
+  | "create-listing";
 
 interface NavItem {
   id: NavId;
@@ -21,6 +24,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: "home", icon: Home },
   { id: "calendar", icon: Calendar },
+  { id: "marketplace", icon: Store },
   { id: "chat", icon: MessageCircle },
   { id: "bell", icon: Bell },
 ];
@@ -44,9 +48,12 @@ export function BottomNav({
       className="shrink-0 border-t border-neutral-900 bg-black/90 backdrop-blur"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid grid-cols-5 items-center px-4 pb-3 pt-3">
+      <div className="grid grid-cols-6 items-center px-4 pb-3 pt-3">
         {NAV_ITEMS.map((item) => {
-          const isActive = item.id === activeId;
+          const isActive =
+            item.id === activeId ||
+            (item.id === "marketplace" &&
+              (activeId === "listing-detail" || activeId === "create-listing"));
           const Icon = item.icon;
           return (
             <button

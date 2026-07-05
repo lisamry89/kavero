@@ -1,35 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Activity,
-  Hammer,
-  MoreHorizontal,
-  Plus,
-  Stethoscope,
-  Trophy,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { AppointmentStatus, CareAppointment, HealthEventType, StableHorse } from "@/lib/types";
-
-const TYPE_ICON: Record<HealthEventType, LucideIcon> = {
-  vet: Stethoscope,
-  farrier: Hammer,
-  dentist: Stethoscope,
-  osteopath: Activity,
-  competition: Trophy,
-  other: MoreHorizontal,
-};
-
-const TYPE_LABEL: Record<HealthEventType, string> = {
-  vet: "Vétérinaire",
-  farrier: "Maréchal-ferrant",
-  dentist: "Dentiste équin",
-  osteopath: "Ostéopathe",
-  competition: "Concours",
-  other: "Autre",
-};
+import { APPOINTMENT_TYPE_ICON as TYPE_ICON, APPOINTMENT_TYPE_LABEL as TYPE_LABEL } from "@/lib/appointment-shared";
 
 const STATUS_LABEL: Record<AppointmentStatus, string> = {
   pending: "En attente de validation",

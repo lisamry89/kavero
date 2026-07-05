@@ -8,11 +8,15 @@ import {
   FeedItem,
   Horse,
   HorseDocument,
+  Listing,
   LogTask,
   Pedigree,
   WorkoutSession,
 } from "@/lib/types";
 import { RoleSwitch } from "@/components/RoleSwitch";
+import { MarketplaceScreen } from "@/components/marketplace/MarketplaceScreen";
+import { ListingDetailScreen } from "@/components/marketplace/ListingDetailScreen";
+import { CreateListingScreen } from "@/components/marketplace/CreateListingScreen";
 import { HorseHeader } from "./HorseHeader";
 import { Tabs } from "./Tabs";
 import { FeedTab } from "./FeedTab";
@@ -50,6 +54,8 @@ export function HorseDashboard({
   conversations,
   notifications,
   workoutHistory,
+  listings,
+  onAddListing,
   onSwitchRole,
 }: {
   horse: Horse;
@@ -63,6 +69,8 @@ export function HorseDashboard({
   conversations: Conversation[];
   notifications: AppNotification[];
   workoutHistory: WorkoutSession[];
+  listings: Listing[];
+  onAddListing: (listing: Listing) => void;
   onSwitchRole: () => void;
 }) {
   const TABS = [
@@ -79,6 +87,7 @@ export function HorseDashboard({
     workoutHistory
   );
   const [viewingSessionId, setViewingSessionId] = useState<string | null>(null);
+  const [viewingListingId, setViewingListingId] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = usePersistentState(`kavero:${horse.id}:photoUrl`, horse.photoUrl);
   const [horseDocuments, setHorseDocuments] = usePersistentState(
     `kavero:${horse.id}:documents`,
@@ -88,6 +97,7 @@ export function HorseDashboard({
   const hasUnseenStory = feedItems.some((item) => !item.viewed);
   const latestFeedItem = feedItems[0];
   const viewingSession = sessions.find((s) => s.id === viewingSessionId);
+  const viewingListing = listings.find((l) => l.id === viewingListingId);
   const displayHorse = { ...horse, photoUrl };
   const ownAppointments = appointments.filter((a) => a.horseId === horse.id);
 
@@ -175,6 +185,17 @@ export function HorseDashboard({
     );
   }
 
+  function handleOpenListing(id: string) {
+    setViewingListingId(id);
+    setActiveNav("listing-detail");
+  }
+
+  function handleCreateListing(listing: Listing) {
+    onAddListing(listing);
+    setViewingListingId(listing.id);
+    setActiveNav("listing-detail");
+  }
+
   return (
     <div className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col bg-black">
       <div className="flex-1 overflow-hidden">
@@ -219,11 +240,31 @@ export function HorseDashboard({
             onAddMemory={handleAddMemory}
           />
         )}
+        {activeNav === "marketplace" && (
+          <MarketplaceScreen listings={listings} onBack={goHome} onOpen={handleOpenListing} />
+        )}
+        {activeNav === "listing-detail" && viewingListing && (
+          <ListingDetailScreen
+            listing={viewingListing}
+            onBack={() => setActiveNav("marketplace")}
+            onContactSeller={() => setActiveNav("chat")}
+          />
+        )}
+        {activeNav === "create-listing" && (
+          <CreateListingScreen
+            sellerName={horse.owner}
+            onBack={goHome}
+            onCreate={handleCreateListing}
+          />
+        )}
         {activeNav === "home" && (
           <div className="no-scrollbar h-full overflow-y-auto">
             <div className="relative px-4 pb-4 pt-6">
               <div className="absolute left-4 top-6 z-10">
-                <QuickAddButton onSelectWorkout={() => setActiveNav("gps-tracking")} />
+                <QuickAddButton
+                  onSelectWorkout={() => setActiveNav("gps-tracking")}
+                  onSelectListing={() => setActiveNav("create-listing")}
+                />
               </div>
               <div className="absolute right-4 top-6 z-10">
                 <RoleSwitch role="owner" onSwitch={onSwitchRole} />

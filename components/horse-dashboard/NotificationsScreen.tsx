@@ -1,10 +1,17 @@
-import { CalendarClock, CircleCheck, MessageCircle, type LucideIcon } from "lucide-react";
+import {
+  CalendarClock,
+  CircleCheck,
+  MessageCircle,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 import { AppNotification, NotificationKind } from "@/lib/types";
 
 const KIND_ICON: Record<NotificationKind, LucideIcon> = {
   reminder: CalendarClock,
   care: CircleCheck,
   message: MessageCircle,
+  appointment: ShieldCheck,
 };
 
 export function NotificationsScreen({
